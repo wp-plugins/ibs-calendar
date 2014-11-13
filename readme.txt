@@ -1,6 +1,6 @@
 === IBS Calendar ===
 Contributors: hmoore71
-Donate link: none
+Donate link: https://indianbendsolutions.net/donate/
 Plugin URI: https://indianbendsolutions.net/documentation/ibs-Calendar/
 Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
@@ -17,6 +17,7 @@ Implementation of Adam Shaw's Full Calendar to display Google Calendar public fe
 * Define any practical number of Google Calendar feeds each having a different color scheme.
 * Style tooltips using Qtip2 predefined styles.
 * Shortcode generator to help customize individual shortcodes. 
+* See more at https://indianbendsolutions.net/documentation/ibs-Calendar/
 
 Presently IBS Calendar is in its Beta phase of development and all testing and reporting of issues is appreciated.
 
