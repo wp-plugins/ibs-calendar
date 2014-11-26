@@ -10,7 +10,7 @@ Stable tag: 0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Implementation of Adam Shaw's Full Calendar to display Google Calendar public feeds in Wordpress posts and pages. 
+Implementation of Adam Shaw's Full Calendar (see note below)
 
 == Description ==
 * IBS Calendar is a comprehensive implementation of the jQuery Full Calendar Version 2 from Adam Shaw. See http://fullcalendar.io/. 
@@ -20,6 +20,9 @@ Implementation of Adam Shaw's Full Calendar to display Google Calendar public fe
 * See more at https://indianbendsolutions.net/documentation/ibs-Calendar/
 
 Presently IBS Calendar is in its Beta phase of development and all testing and reporting of issues is appreciated.
+
+2014-11-26 NOTE GOOGLE has changed its support of Google Calendar feeds now requiring a developer license. As it presently stands the plugin is non functional.
+As soon as the issues can be resolved ther will be a new release
 
 == Installation ==
 1. Download ibs-Calendar-0.1.zip and unzip.
