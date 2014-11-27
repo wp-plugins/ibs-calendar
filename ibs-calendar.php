@@ -4,7 +4,7 @@
   Plugin URI: http://wordpress.org/extend/plugins/
   Description: implements FullCalendar for Wordpress Adimin and shortcode.
   Author: Harry Moore
-  Version: 0.1
+  Version: 0.2
   Author URI: http://indianbendsolutions.com
   License: none
   License URI: none
