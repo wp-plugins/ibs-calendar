@@ -6,11 +6,11 @@ Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
 Requires at least: 4.0
 Tested up to: 4.0
-Stable tag: 0.1
+Stable tag: 0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Implementation of Adam Shaw's Full Calendar (see note below)
+Implementation of Adam Shaw's Full Calendar for public Google Calendar feeds.
 
 == Description ==
 * IBS Calendar is a comprehensive implementation of the jQuery Full Calendar Version 2 from Adam Shaw. See http://fullcalendar.io/. 
@@ -20,9 +20,6 @@ Implementation of Adam Shaw's Full Calendar (see note below)
 * See more at https://indianbendsolutions.net/documentation/ibs-Calendar/
 
 Presently IBS Calendar is in its Beta phase of development and all testing and reporting of issues is appreciated.
-
-2014-11-26 NOTE GOOGLE has changed its support of Google Calendar feeds now requiring a developer license. As it presently stands the plugin is non functional.
-As soon as the issues can be resolved ther will be a new release
 
 == Installation ==
 1. Download ibs-Calendar-0.1.zip and unzip.
@@ -35,10 +32,14 @@ How do I get the Google Calendar feed address?
 1. Open your Google Calendar and on the left side bar click "My calendars" which should list all of your calendars.
 2. To the right of your calendar name is a dropdown indicator; click it and a dialog will display.
 3. Click "Clendar settings" and that will open a page with all of your calendar settings on it.
-4. Towards the bottom are a set of three buttons XML(orange) ICAL(green) HTML(blue). Click the XML(orange) and a dialog will open displaying the link to the calendar.
-5. Copy and paste this link into the IBS Calendar feed address field.
+4. Towards the bottom are a set of three buttons XML(orange) ICAL(green) HTML(blue) and a Calendar ID. 
+5. Click the XML(orange) and a dialog will open displaying the link to the calendar. Copy and paste this link into the IBS Calendar feed address field.
+6. Alternatively you may also copy and paste the Calendar ID into the IBS Calendar Feed.
 
-2. Can I display event sources other than Google Calendar? Perhaps. If the event information conforms to Full Calendar expectations. Presently only Google Calendar feeds have been tested.
+What is "Google API Key" ? Google requires every user of the Google Calendar feeds to have their own Google Calendar API Key. IBS Calendar has its own key that is shared with all users of the plugin.
+If the use of the key gets too high (500,000 requests per day) the plugin may be denied access. At that point you may want to obtain another key.
+
+Can I display event sources other than Google Calendar? Perhaps. If the event information conforms to Full Calendar expectations. Presently only Google Calendar feeds have been tested.
 
 == Screenshots ==
 1. A calendar view
@@ -51,5 +52,6 @@ How do I get the Google Calendar feed address?
 == Changelog ==
 
 (initial release)
+2014-11-27 Added required Google Calendar API Key
 
 == Upgrade Notice ==

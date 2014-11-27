@@ -17,7 +17,6 @@
  */
 
 define('IBS_CALENDAR_VERSION', '0.1');
-
 register_activation_hook(__FILE__, 'ibs_calendar_defaults');
 
 function ibs_calendar_defaults() {
@@ -184,7 +183,7 @@ class IBS_CALENDAR {
     }
 
     static function field_event_list() {
-        echo '<select name="ibs_calendar_options[event_list]" value="' . $value . '" />';
+        echo '<select name="ibs_calendar_options[event_list]"  />';
         $selected = self::$options['event_list'] == "none" ? 'selected' : '';
         echo '<option value="none" ' . $selected . '>None</option>';
         $selected = self::$options['event_list'] == "display" ? 'selected' : '';
@@ -262,16 +261,19 @@ class IBS_CALENDAR {
     static function field_feeds() {
         for ($feed = 1; $feed <= self::$options['feedCount']; $feed++) {
             $curr_feed = "feed_" . $feed;
-            $value = self::$options['feeds'][$curr_feed]['name'];
+            $value = isset(self::$options['feeds'][$curr_feed]['name']) ? self::$options['feeds'][$curr_feed]['name'] : '';
             echo "<div class='ibs-admin-bar' ><span>&nbsp;Feed $feed</span></div>";
             echo "<div class='feed-div'><span>Name</span><input id='ibs-feed-name-$feed' name='ibs_calendar_options[feeds][$curr_feed][name]' type='text' placeholder='feed name' size='25' value='$value' /></div>";
             $checked = isset(self::$options['feeds'][$curr_feed]['enabled']) && self::$options['feeds'][$curr_feed]['enabled'] == 'yes' ? 'checked' : '';
             echo "<div class='feed-div'><span>Enabled</span><input name='ibs_calendar_options[feeds][$curr_feed][enabled]' value='yes' $checked type='checkbox'/></div>";
-            $value = self::$options['feeds'][$curr_feed]['url'];
-            echo "<div class='feed-div' ><span>Address</span><input id='ibs-feed-url-$feed'name='ibs_calendar_options[feeds][$curr_feed][url]' type='text' placeholder='feed url' size='100' value='$value' /></div>";
-            $value = self::$options['feeds'][$curr_feed]['textColor'];
+            $value = isset(self::$options['feeds'][$curr_feed]['url']) ? self::$options['feeds'][$curr_feed]['url'] : '';
+            echo "<div class='feed-div' ><span>Address</span><input id='ibs-feed-url-$feed'name='ibs_calendar_options[feeds][$curr_feed][url]' type='text' placeholder='Google Calendar Address (XML or Calendar ID)' size='100' value='$value' /></div>";
+            $value = isset(self::$options['feeds'][$curr_feed]['key']) ? self::$options['feeds'][$curr_feed]['key'] : '';
+            echo "<div class='feed-div' ><span>Key</span><input id='ibs-feed-key-$feed'name='ibs_calendar_options[feeds][$curr_feed][key]' type='text' placeholder='Google API Key' size='100' value='$value' /></div>";
+            $value = isset(self::$options['feeds'][$curr_feed]['textColor']) ? self::$options['feeds'][$curr_feed]['textColor'] : 'black';
+            echo '<div class="feed-div" ></div>';
             echo "<span class='feed-letter'>Letters</span><input id='colorpicker-fg-$feed' class='ibs-colorpicker' feed='#ibs-feed-url-$feed' css='color' name='ibs_calendar_options[feeds][$curr_feed][textColor]' value='$value' />";
-            $value = self::$options['feeds'][$curr_feed]['backgroundColor'];
+            $value = isset(self::$options['feeds'][$curr_feed]['backgroundColor']) ? self::$options['feeds'][$curr_feed]['backgroundColor'] : 'white';
             echo "<span class='feed-background'>Background</span><input id='colorpicker-bg-$feed' class='ibs-colorpicker' feed='#ibs-feed-url-$feed' css='background-color' name='ibs_calendar_options[feeds][$curr_feed][backgroundColor]' value='$value' />";
             echo "<div style='width:100%; height:20px; margin-bottom:30px';> </div>";
         }
@@ -419,7 +421,7 @@ class IBS_CALENDAR {
                     }});
                 $("#ibs-calendar-tabs").show();
             });</script>
-        <div id="ibs-calendar-tabs" style="display:none">
+        <div id="ibs-calendar-tabs" style="display:none" >
             <ul id="ibs-calendar-tabs-nav">
                 <li><a href="#ibs-calendar-tab-settings">Settings</a></li>
                 <li><a href="#ibs-calendar-tab-fullcalendar">Options</a></li>
@@ -534,8 +536,8 @@ class IBS_CALENDAR {
                 switch ($key) {
                     case 'width' : $args['width'] = $value;
                     case 'weekends' : $args['weekends'] = $value;
-                    case 'theme' : $args['theme'] = $value;    
-                    case 'editable' : $args['editable'] = $value;     
+                    case 'theme' : $args['theme'] = $value;
+                    case 'editable' : $args['editable'] = $value;
                     case 'event_list': $args['event_list'] = $value;
                     case 'timeformat' : $args['timeFormat'] = $value;
                         break;

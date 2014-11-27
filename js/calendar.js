@@ -8,6 +8,9 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+function ibs_util_19(){
+    return 'AIzaSyDU0aiNYlY1sRHPuZadvnfAkIRMhEFobP4';
+}
 function CalendarObj($, args) {
     var cal = this;
     var id = args['id'];
@@ -158,6 +161,13 @@ function CalendarObj($, args) {
         for (var feed in this.options.feeds) {
             if (this.options.feeds[feed].url !== '' && this.options.feeds[feed].enabled === 'yes') {
                 var event_source = {
+                    'googleCalendarApiKey' : function(){
+                        if(typeof cal.options.feeds[feed]['key'] === 'string' && cal.options.feeds[feed]['key'] !== ''){
+                            return cal.options.feeds[feed]['key'];
+                        }else{
+                            return ibs_util_19();
+                        }
+                    },
                     'textColor': this.options.feeds[feed]['textColor'],
                     'backgroundColor': this.options.feeds[feed]['backgroundColor'],
                     'url': this.options.feeds[feed]['url']
