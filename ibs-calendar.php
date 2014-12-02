@@ -186,8 +186,8 @@ class IBS_CALENDAR {
         echo '<select name="ibs_calendar_options[event_list]"  />';
         $selected = self::$options['event_list'] == "none" ? 'selected' : '';
         echo '<option value="none" ' . $selected . '>None</option>';
-        $selected = self::$options['event_list'] == "display" ? 'selected' : '';
-        echo '<option value="display" ' . $selected . '>Display</option>';
+        $selected = self::$options['event_list'] == "show" ? 'selected' : '';
+        echo '<option value="show" ' . $selected . '>Show</option>';
         $selected = self::$options['event_list'] == "hide" ? 'selected' : '';
         echo '<option value="hide" ' . $selected . '>Hide</option>';
         echo '</select>';
@@ -478,7 +478,7 @@ class IBS_CALENDAR {
                     <div><span>event_list</span><select name="eventlist">
                             <option value="" selected ></option>
                             <option value="none">None</option>
-                            <option value="display" >Display</option>
+                            <option value="show" >Show</option>
                             <option value="hide" >Hide</option>
                         </select>
                     </div>
@@ -535,10 +535,15 @@ class IBS_CALENDAR {
             foreach ($atts as $key => $value) {
                 switch ($key) {
                     case 'width' : $args['width'] = $value;
+                        break;
                     case 'weekends' : $args['weekends'] = $value;
+                        break;
                     case 'theme' : $args['theme'] = $value;
+                        break;
                     case 'editable' : $args['editable'] = $value;
-                    case 'event_list': $args['event_list'] = $value;
+                        break;
+                    case 'eventlist': $args['event_list'] = $value;
+                        break;
                     case 'timeformat' : $args['timeFormat'] = $value;
                         break;
                     case 'defaultview' : $args['defaultView'] = $value;
@@ -547,7 +552,7 @@ class IBS_CALENDAR {
                         break;
                     case 'headerleft' : $args['headerLeft'] = $value;
                         break;
-                    case 'headercenter' : $args['headerCenter'] = $value;
+                    case 'headercenter' : 'title';//$args['headerCenter'] = $value;
                         break;
                     case 'headerright' : $args['headerRight'] = $value;
                         break;
@@ -589,7 +594,7 @@ class IBS_CALENDAR {
                 <input id="list-display-id" type="checkbox" style="margin : 10px;" />
                 <span> &nbsp;Event List</span>
                 <div id="event-list-id" >
-                    <table id="event-table-id" >
+                    <table id="event-table-id" style="width:100%;" >
                         <tbody> 
                         </tbody>
                     </table>
@@ -668,9 +673,13 @@ class IBS_CALENDAR {
     );
 
     static function enqueue_scripts() {
-        //insure jquery is loaded before calendar
         foreach (self::$core_handles as $handle) {
             wp_enqueue_script($handle);
+        }
+        if (is_active_widget('', '', 'ibs_wcalendar', true)) {
+            self::print_admin_scripts();
+            wp_enqueue_style(self::$style_handles);
+            wp_enqueue_script(self::$script_handles);
         }
     }
 
@@ -712,3 +721,4 @@ class IBS_CALENDAR {
 }
 
 IBS_CALENDAR::init();
+include( 'lib/widget-ibs-calendar.php' );
