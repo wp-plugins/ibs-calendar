@@ -5,8 +5,8 @@ Plugin URI: https://indianbendsolutions.net/documentation/ibs-Calendar/
 Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
 Requires at least: 4.0
-Tested up to: 4.0
-Stable tag: 0.2
+Tested up to: 4.01
+Stable tag: 0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,12 +17,13 @@ Implementation of Adam Shaw's Full Calendar for public Google Calendar feeds.
 * Define any practical number of Google Calendar feeds each having a different color scheme.
 * Style tooltips using Qtip2 predefined styles.
 * Shortcode generator to help customize individual shortcodes. 
+* IBS Calendar Widget showing calendar and optionally an event list.
 * See more at https://indianbendsolutions.net/documentation/ibs-Calendar/
 
 Presently IBS Calendar is in its Beta phase of development and all testing and reporting of issues is appreciated.
 
 == Installation ==
-1. Download ibs-Calendar-0.1.zip and unzip.
+1. Download ibs-Calendar and unzip.
 2. Upload `ibs-Calendar` folder to the Wordpress plugin directory
 3. Activate the plugin through the ‘Plugins’ menu in WordPress
 4 Admin | Settings menu | IBS Calendar and configure the plugin.
@@ -53,5 +54,6 @@ Can I display event sources other than Google Calendar? Perhaps. If the event in
 
 (initial release)
 2014-11-27 Added required Google Calendar API Key
+2014-12-02 Version 0.3 adds a IBS calendar widget using Full Calendar.
 
 == Upgrade Notice ==
