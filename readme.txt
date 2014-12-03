@@ -49,6 +49,8 @@ Can I display event sources other than Google Calendar? Perhaps. If the event in
 4. Feeds for Google Calendars
 5. Tooltip styling tab.
 6. Shortcode generator.
+7. Widget
+8. Widget admin
 
 == Changelog ==
 
