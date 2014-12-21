@@ -112,7 +112,6 @@ class IBS_WCalendar extends WP_Widget {
         $args['height'] = (int) $instance['cal_height'];
         $args['ajaxData'] = array("action" => "ibs_calendar_ajax", "type" => "event");
         $args['ajaxUrl'] = admin_url("admin-ajax.php");
-        $args['widget'] = true;
         $args['id'] = $widget_id;
         $id = $widget_id;
         $width = $args['width'];
@@ -138,7 +137,7 @@ class IBS_WCalendar extends WP_Widget {
         ?>
         <script type="text/javascript">
             jQuery(document).ready(function ($) {
-                new CalendarObj(jQuery, <?PHP echo json_encode($args); ?>);
+                new CalendarObj(jQuery, <?PHP echo json_encode($args); ?>, 'widget');
             });
         </script> 
         <?php

@@ -1,15 +1,16 @@
+function hex(x) {
+    var hexDigits = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f");
+    return isNaN(x) ? "00" : hexDigits[(x - x % 16) / 16] + hexDigits[x % 16];
+}
+function rgb2hex(color) {
+    var rgb = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (rgb) {
+        return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+    } else {
+        return color;
+    }
+}
 jQuery(document).ready(function ($) {
-    $('.ibs-colorpicker').colorpicker();
-    $('.ibs-colorpicker').parent().css({'width': 'auto', 'float': 'left', 'margin_left': '5px', 'margin-right': '5px'});
-    $('.ibs-colorpicker').on('change.color', '', {}, function (event) {
-        var selector = $(this).attr('feed');
-        var css = $(this).attr('css');
-        var value = $(this).val();
-        $(selector).css(css, value);
-    });
-    $('.ibs-colorpicker').each(function (index) {
-        $(this).trigger('change.color');
-    });
     $('#ibs-event-limit').on('change', '', {}, function (event) {
         var value = $(this).val().toLowerCase();
         switch (value) {
@@ -71,7 +72,7 @@ jQuery(document).ready(function ($) {
                 }
             } else {
                 if ($(item).attr('type') === 'text' || $(item).attr('type') === 'number') {
-                    if ($(item).val() !== '') {
+                    if ($(item).val() !== '' && $(item).val() !== 'null') {
                         sc += ' ' + $(item).attr('name') + '="' + $(item).val() + '"';
                     }
                 }
@@ -94,7 +95,25 @@ jQuery(document).ready(function ($) {
 jQuery(document).ready(function ($) {
     $(document).find('body')
             .append(
-                    '<div><div id="dropdown-header-left" class="dropdown dropdown-tip">'
+                    '<div>'
+                    + '<div id="dropdown-hiddendays" class="dropdown dropdown-tip">'
+                    + '<ul class="dropdown-menu dropdown-list">'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><label><input class="header-button-item" value="0" type="checkbox" /> Sunday</label></li>'
+                    + '<li><label><input class="header-button-item" value="1" type="checkbox" /> Monday</label></li>'
+                    + '<li><label><input class="header-button-item" value="2" type="checkbox" /> Tuseday</label></li>'
+                    + '<li><label><input class="header-button-item" value="3" type="checkbox" /> Wednesday</label></li>'
+                    + '<li><label><input class="header-button-item" value="4" type="checkbox" /> Thursday</label></li>'
+                    + '<li><label><input class="header-button-item" value="5" type="checkbox" /> Friday</label></li>'
+                    + '<li><label><input class="header-button-item" value="6" type="checkbox" /> Saturday</label></li>'
+
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><a class="dropdown-update" rel="#dropdown-hiddendays" href="#">Update</label></li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '</ul>'
+                    + '</div>'
+
+                    + '<div id="dropdown-header-left" class="dropdown dropdown-tip">'
                     + '<ul class="dropdown-menu dropdown-list">'
                     + '<li class="dropdown-divider"></li>'
                     + '<li><label><input class="header-button-item" value="prevYear" type="checkbox" /> Prev Year</label></li>'
@@ -168,7 +187,37 @@ jQuery(document).ready(function ($) {
                     + '<li><a class="dropdown-update"  rel="#dropdown-event-limit" href="#"> Update</label></li>'
                     + '<li class="dropdown-divider"></li>'
                     + '</ul>'
-                    + '</div></div>');
+                    + '</div>'
+
+                    + '<div id="dropdown-height" class="dropdown dropdown-tip">'
+                    + '<ul class="dropdown-menu">'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><label><input class="option-height-item" name="height" value="null" type="radio" /> Unset (default)</label></li>'
+                    + '<li><label><input class="option-height-item" name="height" value="auto" type="radio" />Auto</li>'
+                    + '<li><label><input class="option-height-item" name="height" value="number" type="radio" /> <input id="option-height" min="100" inc="50" value="" type="number" /> Height in pixels<label></li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><a class="dropdown-update"  rel="#dropdown-height" href="#"> Update</label></li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '</ul>'
+                    + '</div>'
+
+                    + '<div id="dropdown-dns" class="dropdown dropdown-tip">'
+                    + '<ul class="dropdown-menu">'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><label>Sun </label> <input class="dns-item" name="dayNamesShort" value="Sun" type="text" size="10" /></li>'
+                    + '<li><label>Mon </label> <input class="dns-item" name="dayNamesShort" value="Mon" type="text" size="10" /></li>'
+                    + '<li><label>Tue </label> <input class="dns-item" name="dayNamesShort" value="Tue" type="text" size="10" /></li>'
+                    + '<li><label>Wed </label> <input class="dns-item" name="dayNamesShort" value="Wed" type="text" size="10" /></li>'
+                    + '<li><label>Thu </label> <input class="dns-item" name="dayNamesShort" value="Thu" type="text" size="10" /></li>'
+                    + '<li><label>Fri </label> <input class="dns-item" name="dayNamesShort" value="Fri" type="text" size="10" /></li>'
+                    + '<li><label>Sat </label> <input class="dns-item" name="dayNamesShort" value="Sat" type="text" size="10" /></li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><a class="dropdown-update"  rel="#dropdown-day-names-short" href="#"> Update</li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '</ul>'
+                    + '</div>'
+
+                    + '</div>');
 
     $('#dropdown-header-left').find('ul').sortable();
     $('#dropdown-header-center').find('ul').sortable();
@@ -277,4 +326,90 @@ jQuery(document).ready(function ($) {
             }
         }
     });
+    $('#dropdown-hiddendays').on('hide', '', {}, function (event) {
+        var result = [];
+        $('#dropdown-hiddendays').find('input').each(function (index, item) {
+            if ($(item).is(':checked')) {
+                result.push($(item).val());
+            }
+        });
+        if (result.length) {
+            if ($('#dropdown-event-limit').hasClass('ibs-shortcode')) {
+                $('#ibs-sc-hiddendays').val(result.toString());
+                $('#shortcode-options').trigger('change');
+            } else {
+                $('#ibs-hiddendays').val(result.toString());
+            }
+        }
+    });
+    $('#dropdown-height').on('show', '', {}, function (event) {
+        $('#dropdown-height').find('input').prop('checked', false);
+        $('#option-height').prop('disabled', true);
+        $('#option-height').val('');
+    });
+    $('#dropdown-height').on('hide', '', {}, function (event, dropdownData) {
+        $('#dropdown-height').find('input').each(function (index, item) {
+            var target = $('#dropdown-event-limit').hasClass('ibs-options') ? $('#ibs-height') : $('#ibs-sc-height');
+            if ($(item).attr('type') === 'radio' && $(item).is(':checked')) {
+                switch ($(this).val()) {
+                    case 'null' :
+                        target.val('null');
+                        break;
+                    case 'auto' :
+                        target.val('auto');
+
+                        break;
+                    case 'number' :
+                        target.val($('#option-height').val());
+                }
+            }
+        });
+        $('.option-height-item').on('click', '', {}, function (event) {
+            event.stopImmediatePropagation();
+            switch ($(this).val()) {
+                case 'null' :
+                case 'auto' :
+                    $('#option-height').prop('disabled', true);
+                    break;
+                case 'number' :
+                    $('#option-height').prop('disabled', false);
+                    $('#option-height').focus();
+
+            }
+        });
+    });
+    $('.dns-item').on('click', '', {}, function (event) {
+        event.stopImmediatePropagation();
+        $(this).focus();
+    });
+    $('#dropdown-dns').on('hide', '', {}, function (event) {
+        var result = [];
+        $('#dropdown-dns').find('input').each(function (index, item) {
+            result.push($(item).val());
+        });
+        if (result.length) {
+            if ($('#dropdown-event-limit').hasClass('ibs-shortcode')) {
+                $('#ibs-sc-dns').val(result.toString());
+                $('#shortcode-options').trigger('change');
+            } else {
+                $('#ibs-day-names-short').val(result.toString());
+            }
+        }
+    });
+    $('#event-limit-number').prop('disabled', true);
+    $('#event-limit-number').val('');
+    if ($('#dropdown-event-limit').hasClass('ibs-shortcode')) {
+        $('#shortcode-options').trigger('change');
+    }
+
+    $('.feed-color-box').click(function () {
+        $('.feed-color-box').removeClass('feed-color-box-selected');
+        $(this).addClass('feed-color-box-selected');
+        var fid = $(this).attr('rel');
+        var rgb = $(this).css('background-color');
+        $('#ibs-feed-name-' + fid).css({'background-color': rgb, color: $('#colorpicker-fg-' + fid).val()});
+        $('#colorpicker-bg-' + fid).val(rgb2hex(rgb));
+
+    });
+
 });
