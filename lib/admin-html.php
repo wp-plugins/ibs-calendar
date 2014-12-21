@@ -13,7 +13,7 @@
                         jQuery(document).ready(function ($) {
 
                             $('#ibs-calendar-tab-calendar').parent()
-                                    .append($('<div id="ibs-calendar-1" style="width:<?PHP echo $args['width']; ?>">')
+                                    .append($('<div id="ibs-calendar-1" style="max-width:<?PHP echo "1000px"; ?>">')
                                             .append($('<form id="fullcalendar-1" >'))
                                             .append($('<div id="ibs-loading-1" >'))
                                             .append($('<div>')

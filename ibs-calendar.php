@@ -522,7 +522,7 @@ class IBS_CALENDAR {
         $args['id'] = self::$add_script;
         $id = self::$add_script;
 
-        $html = '<div id="ibs-calendar-id" class="aligncenter" style="width:1000px;" >
+        $html = '<div id="ibs-calendar-id" class="aligncenter" style="width:%w;" >
             <form id="fullcalendar-id" >
                 <div id="ibs-loading-id" ></div>
             </form>
@@ -538,6 +538,7 @@ class IBS_CALENDAR {
             </div>
         </div>';
         $html = str_replace('-id', '-' . $id, $html);
+        $html = str_replace('%w', $args['width'], $html);
         ob_start();
         echo $html;
         ?>
