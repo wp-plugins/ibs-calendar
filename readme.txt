@@ -5,7 +5,7 @@ Plugin URI: https://indianbendsolutions.net/documentation/ibs-Calendar/
 Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
 Requires at least: 4.0
-Tested up to: 4.01
+Tested up to: 4.1
 Stable tag: 0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
