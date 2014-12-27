@@ -17,17 +17,26 @@ function CalendarObj($, args, mode) {
 (function ($) {
     CalendarObj.prototype.init = function (args, mode) {
         var cal = this;
+        for (arg in args) {
+            var data = args[arg];
+            if (typeof data === 'string') {
+                data = data.toLowerCase();
+                if (data === 'yes' || data === 'no') {
+                    args[arg] = data === 'yes' ? true : false;
+                } else {
+                    if (data === 'true' || data === 'false') {
+                        args[arg] = data === 'true' ? true : false;
+                    }
+                }
+            }
+        }
         this.args = args;
         this.mode = mode;
-        this.db = null;
-        this.db_id = 0;
         var id = args['id'];
+        this.ibs_events;
         this.calendar = $('#fullcalendar-' + id);
         this.options = {
             'id': '1',
-            'debug': 'no',
-            'ui_theme_css': 'ui-lightness.css',
-            'google': true,
             'feeds': {},
             'ajaxUrl': null,
             'ajaxData': null,
@@ -89,15 +98,11 @@ function CalendarObj($, args, mode) {
             'hiddenDays': '',
             'fixedWeekCount': true,
             'weekNumbers': false,
-            'defaultDate' : moment()
+            'defaultDate': moment()
         };
         for (arg in args) {
             if (typeof this.fullcalendar_options[arg] !== 'undefined' && args[arg] !== '') {
-                if (args[arg] === 'yes' || args[arg] === 'no') {
-                    this.fullcalendar_options[arg] = args[arg] === 'yes' ? true : false;
-                } else {
-                    this.fullcalendar_options[arg] = args[arg];
-                }
+                this.fullcalendar_options[arg] = args[arg];
             }
         }
         this.fullcalendar_options.header = {
@@ -116,7 +121,7 @@ function CalendarObj($, args, mode) {
             }
         };
         this.fullcalendar_options.eventRender = function (event, element, view) {
-            if (mode === 'widget') {
+            if (mode === 'widget' || args.hideTitle) {
                 element.css('color', element.css('background-color'));
             }
             element.css('cursor', 'pointer');
@@ -154,7 +159,8 @@ function CalendarObj($, args, mode) {
                                         .css({'text-decoration': past})
                                         .append($('<td>').text(d).css('padding', '3px'))
                                         .append($('<td>').text(t).css('padding', '3px'))
-                                        .append($('<td>').text(events[i].title).addClass('calendar-list-title').css('padding', '3px'))
+                                        .append($('<td>')
+                                                .append($('<a>').attr({href: events[i].url}).text(events[i].title).addClass('calendar-list-title').css('padding', '3px')))
                                         .append($('<td>').text(events[i].location).css('padding', '3px'))
                                         );
                     }
@@ -169,56 +175,16 @@ function CalendarObj($, args, mode) {
                         $(event_table).find('tbody')
                                 .append($('<tr>').qtip(cal.qtip_params(events[i]))
                                         .css({'text-decoration': past})
-                                        .append($('<td>').text(events[i].title).addClass('calendar-list-title').css('padding', '3px'))
+                                        .append($('<td>')
+                                                .append($('<a>').attr({href: events[i].url}).text(events[i].title).addClass('calendar-list-title').css('padding', '3px')))
                                         );
                     }
 
                 }
             }
         };
-        if (args.siteEvents && mode === 'admin') {
-            this.fullcalendar_options.eventClick = $.proxy(function (event, jsEvent, view) {
-                if (typeof event.repeat !== 'undefined') {
-                    cal.editEvent(event);
-                }
-            }, this);
-            this.fullcalendar_options.selectable = true;
-            this.fullcalendar_options.selectHelper = true;
-            this.fullcalendar_options.select = function (start, end, jsevent, view) {
-                switch (view.name) {
-                    case 'month':
-                        break;
-                    case 'basicWeek':
-                        break;
-                    case 'basicDay':
-                        break;
-                    case 'agendaWeek':
-                    case 'agendaDay':
-                        var event = cal.getEvent(0);
-                        event.start = start;
-                        event.end = end;
-                        cal.editEvent(event);
-                }
-                cal.calendar.fullCalendar('unselect');
-            };
-            this.fullcalendar_options.eventResize = function (event, delta) {
-                cal.putEvent(event, false);
-            };
-            this.fullcalendar_options.eventDrop = function (event, delta) {
-                if (event.repeat && delta.days() !== 0) {
-                    cal.calendar.fullCalendar('refetchEvents');
-                } else {
-                    cal.putEvent(event);
-                }
-            };
-            this.fullcalendar_options.dayClick = function (date, jsEvent, view) {
-                if (view.name === 'month') {
-                    cal.calendar.fullCalendar('changeView', 'agendaDay');
-                    cal.calendar.fullCalendar('gotoDate', date);
-                }
-            };
-        }
         this.renderCalendar = function () {
+
             if (args.event_list === 'none') {
                 $('#list-display-' + id).parent().css('display', 'none');
             } else {
@@ -242,13 +208,13 @@ function CalendarObj($, args, mode) {
                     this.calendar.fullCalendar('addEventSource', event_source);
                 }
             }
-            if (args.siteEvents) {
+            if (args.ibsEvents) {
                 this.calendar.fullCalendar('addEventSource',
                         {events: function (start, end, timezone, callback) {
                                 var result = [];
-                                for (var ex in cal.db.Events) {
-                                    var event = cal.db.Events[ex];
-                                    if (event.repeat === null) {
+                                for (var ex in cal.ibs_events) {
+                                    var event = cal.ibs_events[ex];
+                                    if (false == event.recurr) {
                                         if (moment(event.start).unix() >= start.unix() && moment(event.end).unix() <= end.unix()) {
                                             result.push(event);
                                         }
@@ -273,33 +239,41 @@ function CalendarObj($, args, mode) {
                                             }
                                             return false;
                                         }
+                                        var duration = moment(event.end).diff(moment(event.start), 'seconds');
+                                        var start_time = moment(event.start).unix() - moment(event.start).startOf('day').unix();
+
                                         for (var i in dates) {
                                             if (isException(i)) {
                                                 continue;
                                             }
-                                            var current = cal.getEvent(0);
-                                            current.start = moment((dates[i].unix() + (moment(event.start).unix() - moment(event.start).startOf('day').unix())) * 1000).format();
-                                            current.end = moment((dates[i].unix() + (moment(event.end).unix() - moment(event.end).startOf('day').unix())) * 1000).format();
-                                            current.id = event.id;
-                                            current.title = event.title;
-                                            current.allDay = event.allDay;
-                                            current.color = event.color;
-                                            current.textColor = event.textColor;
-                                            current.description = event.description;
-                                            current.location = event.location;
-                                            current.repeat = event.repeat;
-                                            current.exceptions = event.exceptions;
+                                            var theDate = dates[i].startOf('day');
+                                            var current = {
+                                                start: theDate.add(start_time, 'seconds').format(),
+                                                end: theDate.add(duration, 'seconds').format(),
+                                                id: event.id,
+                                                title: event.title,
+                                                allDay: event.allDay,
+                                                color: event.color,
+                                                textColor: event.textColor,
+                                                description: event.description,
+                                                url: event.url,
+                                                repeat: event.repeat,
+                                                exceptions: event.exceptions
+                                            }
                                             result.push(current);
                                         }
                                     }
-                                }
-                                for (var i in result) {
-                                    result[i].textColor = '#ffffff';
-                                    result[i].editable = mode === 'admin';
+                                    for (var i in result) {
+                                        result[i].textColor = '#ffffff';
+                                        result[i].editable = false;
+                                    }
+
                                 }
                                 callback(result);
                             }
-                        });
+                        }
+                );
+
             }
             if (args.event_list !== 'none') {
                 if (args.event_list === 'show') {
@@ -315,196 +289,37 @@ function CalendarObj($, args, mode) {
                 });
             }
         };
-        if (args.siteEvents) {
-            if (mode === 'admin' || mode === 'events') {
-                this.eventHTML();
-            }
-            this.getDB();
-        } else {
-            this.renderCalendar();
-        }
-    };
-    CalendarObj.prototype.getDB = function () {
-        var cal = this;
-        if (this.db) {
-            return;
-        }
-        $.get(this.options.ajaxUrl, {
-            action: 'ibs_calendar_get_db',
-            cache: false,
-            dataType: 'json'
-        }).then(
-                function (data) {
-                    if (data !== "") {
-                        data = decodeURIComponent(data);
-                        cal.db = JSON.parse(data);
-                        cal.db_id = 0;
-                        for (var i in cal.db.Events) {
-                            cal.db.Events[i].id = ++cal.db_id;
-                            if (cal.db.Events[i].repeat === '') {
-                                cal.db.Events[i].repeat = null;
-                            }
-                        }
-                        this.db_id = i;
-                        console.log("Database loaded.");
-                    } else {
-                        cal.db = {Events: []};
-                        this.db_id = 0;
-                    }
-                    //----------------------------------------------------------
-                    if (cal.mode === 'events') {
-                        cal.showEvents();
-                    } else {
-                        cal.renderCalendar();
-                    }
-                    //----------------------------------------------------------
-                },
-                function () {
-                    console.log("Get Database failed.");
-                    if (cal.mode === 'events') {
-                        cal.showEvents();
-                    } else {
-                        cal.renderCalendar();
-                    }
-                });
-    };
-    CalendarObj.prototype.getEvent = function (id) {
-        if (id) {
-            for (var i in this.db.Events) {
-                if (this.db.Events[i].id === id) {
-                    return this.db.Events[i];
-                }
-            }
-            return null;
-        } else {
-            return {
-                id: 0,
-                title: '',
-                allDay: 0,
-                start: moment().format(),
-                end: moment().add(15, 'minute').format(),
-                color: '',
-                textColor: '',
-                description: '',
-                location: '',
-                repeat: null,
-                exceptions: null
-            };
-        }
-    };
-    CalendarObj.prototype.closeDB = function () {
-        if (this.db) {
-            this.putDB();
-            delete this.db;
-            this.db = null;
-        }
-    };
-    CalendarObj.prototype.putEvent = function (event) {
-        if (event.repeat && event.repeat === '') {
-            event.repeat === null;
-        }
-        if (event.description && event.repeat === null) {
-            event.description = null;
-        }
-        if (event.id === 0) {
-            if (typeof event.start === 'object') {
-                event.start = event.start.format();
-            }
-            if (typeof event.end === 'object') {
-                event.end = event.end.format();
-            }
-            event.id = ++this.db_id;
-            this.db.Events.push(event);
-            if (this.mode === 'admin') {
-                if (event.repeat || event.wasRepeat) {
-                    this.calendar.fullCalendar('refetchEvents');
-                } else {
-                    this.calendar.fullCalendar('renderEvent', event);
-                }
-            } else {
-                if (this.mode === 'events')
-                    this.showEvents();
-            }
-        } else {
-            var current = this.getEvent(event.id);
-            current.title = event.title;
-            current.allDay = event.allDay;
-            current.start = event.start.format();
-            try {
-                current.end = event.end.format();
-            } catch (e) {
-                current.end = event.start.endOf('day');
-            }
-            current.color = event.color;
-            current.textColor = event.textColor;
-            current.description = event.description;
-            current.location = event.location;
-            current.repeat = event.repeat;
-            current.exceptions = event.exceptions;
-            if (this.mode === 'admin') {
-                if (event.repeat) {
-                    this.calendar.fullCalendar('refetchEvents');
-                } else {
-                    this.calendar.fullCalendar('updateEvent', event);
-                }
-            } else {
-                if (this.mode === 'events') {
-                    this.showEvents();
-                }
-            }
-        }
-        this.putDB();
-    };
-    CalendarObj.prototype.deleteEvent = function (event) {
-        if (event.repeat) {
-            var exceptions = [];
-            if (event.exceptions) {
-                exceptions = event.exceptions.split(',');
-            }
-            exceptions.push(event.start.format());
-            event.exceptions = exceptions.toString();
-            this.putEvent(event);
-        } else {
-            for (var i in this.db.Events) {
-                if (this.db.Events[i].id === event.id) {
-                    this.db.Events.splice(i, 1);
-                    this.putDB();
-                    break;
-                }
-            }
-        }
-        if (this.mode === 'admin') {
-            this.calendar.fullCalendar('refetchEvents');
-        } else {
-            if (this.mode === 'events') {
-                this.showEvents();
-            }
-        }
-    };
-    CalendarObj.prototype.putDB = function () {
-        if (this.db) {
-            var data = [];
-            for (var i in this.db.Events) {
-                if (this.db.Events[i].id > 0) {
-                    data.push(this.db.Events[i]);
-                }
-            }
-            ;
-            var payload = JSON.stringify({Events: data});
-            $.ajax({
-                type: "POST",
-                url: this.options.ajaxUrl,
-                data: {'action': 'ibs_calendar_put_db', 'data': payload},
-                dataType: "json",
-                cache: false
+        if (args.ibsEvents) {
+            $.get(cal.options.ajaxUrl, {
+                action: 'ibs_calendar_get_events',
+                cache: false,
+                dataType: 'json'
             }).then(
                     function (data) {
-                        console.log('db put completed');
+                        if (data !== "") {
+                            data = decodeURIComponent(data);
+                            cal.ibs_events = JSON.parse(data);
+                            for (var i in cal.ibs_events) {
+                                cal.ibs_events[i].editable = false;
+                                cal.ibs_events[i].start = moment.unix(parseInt(cal.ibs_events[i].start)).format();
+                                cal.ibs_events[i].end = moment.unix(parseInt(cal.ibs_events[i].end)).format();
+                            }
+                            console.log("IBS Events loaded.");
+                        } else {
+                            cal.ibs_events = [];
+                        }
+
+                        //----------------------------------------------------------
+                        cal.renderCalendar();
+                        //----------------------------------------------------------
+
                     },
                     function () {
-                        console.log('db put failed');
-                    }
-            );
+                        console.log("Get IBS Events failed.");
+                    });
+        } else {
+            cal.renderCalendar();
         }
+
     };
 })(jQuery);

@@ -3,10 +3,10 @@
   Plugin Name: IBS Calendar
   Plugin URI: http://wordpress.org/extend/plugins/
   Description: implements FullCalendar for Wordpress Adimin and shortcode.
-  Author: Harry Moore
-  Version: 0.3
-  Author URI: http://indianbendsolutions.com
-  License: none
+  Author: HMoore71
+  Version: 0.4
+  Author URI: http://indianbendsolutions.net
+  License: GPL2
   License URI: none
  */
 
@@ -16,7 +16,7 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-define('IBS_CALENDAR_VERSION', '0.1');
+define('IBS_CALENDAR_VERSION', '0.4');
 register_activation_hook(__FILE__, 'ibs_calendar_defaults');
 
 function ibs_calendar_defaults() {
@@ -32,14 +32,13 @@ function ibs_calendar_deactivate() {
 class IBS_CALENDAR {
 
     static $add_script = 0;
-    static $debug = false;
-    static $ui_theme = "cupertino";
     static $options = array();
 
     static function init() {
-        self::defaults();  //development set new options
-        self::$debug = self::$options['debug'];
-        self::$ui_theme = self::$options['ui_theme'];
+        self::$options = get_option('ibs_calendar_options');
+        if(isset(self::$options['version']) === false || self::$options['version'] !== IBS_CALENDAR_VERSION) {
+            self::defaults();  //development set new options
+        }
         add_action('admin_init', array(__CLASS__, 'admin_options_init'));
         add_action('admin_menu', array(__CLASS__, 'admin_add_page'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_scripts'));
@@ -49,21 +48,16 @@ class IBS_CALENDAR {
         add_action('wp_head', array(__CLASS__, 'print_script_header'));
         add_action('wp_footer', array(__CLASS__, 'print_script_footer'));
         add_action('admin_print_scripts', array(__CLASS__, 'print_admin_scripts'));
-        add_action('wp_ajax_ibs_calendar', array('__CLASS__, ', 'ajax'));
-        add_action('wp_ajax_nopriv_ibs_calendar', array(__CLASS__, 'ajax'));
-
-        add_action('wp_ajax_ibs_calendar_get_db', array(__CLASS__, 'get_db'));
-        add_action('wp_ajax_nopriv_ibs_calendar_get_db', array(__CLASS__, 'get_db'));
-
-        add_action('wp_ajax_ibs_calendar_put_db', array(__CLASS__, 'put_db'));
-        add_action('wp_ajax_nopriv_ibs_calendar_put_db', array(__CLASS__, 'put_db'));
+        add_action('wp_ajax_ibs_calendar_get_events', array(__CLASS__, 'get_ibs_events'));
+        add_action('wp_ajax_nopriv_ibs_calendar_get_events', array(__CLASS__, 'get_ibs_events'));
     }
 
     static function defaults() { //jason_encode requires double quotes
         $options = (array) get_option('ibs_calendar_options');
         $arr = array(
+            "version" => IBS_CALENDAR_VERSION,
             "debug" => false,
-            "siteEvents" => false,
+            "ibsEvents" => false,
             "ui_theme" => "cupertino",
             "event_list" => "none",
             "feedCount" => 3,
@@ -73,11 +67,10 @@ class IBS_CALENDAR {
             "firstDay" => "1",
             "weekends" => true,
             "lang" => "en_us",
-            "ui_theme_css" => "cupertino",
             "titleFormat" => "MMM DD, YYYY",
             "timeFormat" => "HH:mm",
             "defaultView" => "month",
-            "eventLimit" => true,
+            "eventLimit" => false,
             "eventLimitClick" => "popover",
             "aspectRatio" => 1.0,
             "editable" => false,
@@ -95,7 +88,8 @@ class IBS_CALENDAR {
             "weekNumberCalculation" => 'local',
             "weekNumberTitle" => 'W',
             "timeZone" => "local",
-            "qtip" => array('style' => "qtip-bootstrap", 'rounded' => 'qtip-rounded', 'shadow' => 'qtip-shadow')
+            "qtip" => array('style' => "qtip-bootstrap", 'rounded' => 'qtip-rounded', 'shadow' => 'qtip-shadow'),
+            "hideTitle" => false
         );
         foreach ($arr as $key => $value) {
             if (!isset($options[$key])) {
@@ -118,6 +112,7 @@ class IBS_CALENDAR {
             }
         }
         self::$options = $options;
+        self::$options['version'] = IBS_CALENDAR_VERSION;
         update_option('ibs_calendar_options', $options);
     }
 
@@ -127,7 +122,7 @@ class IBS_CALENDAR {
         add_settings_field('debug', 'debug', array(__CLASS__, 'field_debug'), 'calendar-general', 'calendar-section-general');
         add_settings_field('ui_theme', 'ui theme', array(__CLASS__, 'field_ui_theme'), 'calendar-general', 'calendar-section-general');
         add_settings_field('width', 'calendar width', array(__CLASS__, 'field_width'), 'calendar-general', 'calendar-section-general');
-        add_settings_field('siteEvents', 'site events', array(__CLASS__, 'field_siteEvents'), 'calendar-general', 'calendar-section-general');
+        add_settings_field('ibsEvents', 'IBS Events', array(__CLASS__, 'field_ibsEvents'), 'calendar-general', 'calendar-section-general');
         add_settings_field('event_list', 'event list', array(__CLASS__, 'field_event_list'), 'calendar-general', 'calendar-section-general');
 
         add_settings_section('section_fullcalendar', '', array(__CLASS__, 'admin_options_header'), 'fullcalendar');
@@ -182,18 +177,18 @@ class IBS_CALENDAR {
     }
 
     static function field_debug() {
-        $checked = self::$debug ? "checked" : '';
+        $checked = self::$options['debug'] ? "checked" : '';
         echo '<p>determines whether to use minimized javascript</p>';
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = self::$debug ? '' : "checked";
+        $checked = self::$options['debug'] ? '' : "checked";
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="false"' . $checked . '/>&nbspNo';
     }
 
-    static function field_siteEvents() {
-        $checked = self::$options['siteEvents'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[siteEvents]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = self::$options['siteEvents'] ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[siteEvents]" value="false"' . $checked . '/>&nbspNo';
+    static function field_ibsEvents() {
+        $checked = self::$options['ibsEvents'] ? "checked" : '';
+        echo '<input type="radio" name="ibs_calendar_options[ibsEvents]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
+        $checked = self::$options['ibsEvents'] ? '' : "checked";
+        echo '<input type="radio" name="ibs_calendar_options[ibsEvents]" value="false"' . $checked . '/>&nbspNo';
     }
 
     static function field_fixedWeekCount() {
@@ -346,25 +341,25 @@ class IBS_CALENDAR {
 
     static function colors($feed, $color) {
         $template = array(
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #5484ed;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #a4bdfc;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #46d6db;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #7ae7bf;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #51b749;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #fbd75b;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #ffb878;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #ff887c;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #dc2127;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #dbadff;"></div>',
-            '<div class="feed-color-box %c" rel="%f" style="background-color: #e1e1e1;"></div>'
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#5484ed;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#a4bdfc;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#46d6db;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#7ae7bf;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#51b749;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#fbd75b;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#ffb878;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#ff887c;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#dc2127;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#dbadff;"></div>',
+            '<div class="feed-color-box %c" rel="%f" style="background-color:#e1e1e1;"></div>'
         );
         $cstr = $template;
         for ($str = 0; $str < count($cstr); $str++) {
             $cstr[$str] = str_replace('%f', $feed, $cstr[$str]);
-            if (strpos($cstr[$str], $color) >= 0) {
-                str_replace('%c', 'feed-color-box-selected', $cstr[$str]);
+            if (strpos($cstr[$str], $color) > 0) {
+                $cstr[$str] = str_replace('%c', 'feed-color-box-selected', $cstr[$str]);
             } else {
-                str_replace('%c', '', $cstr[$str]);
+                $cstr[$str] = str_replace('%c', '', $cstr[$str]);
             }
         }
         return implode('', $cstr);
@@ -378,7 +373,7 @@ class IBS_CALENDAR {
             $color = "style='background-color:$bg; color:$fg;'";
             $value = isset(self::$options['feeds'][$curr_feed]['name']) ? self::$options['feeds'][$curr_feed]['name'] : '';
             echo "<div class='ibs-admin-bar' ><span>&nbsp;Feed $feed</span></div>";
-            echo "<div class='feed-div'><span>Name</span><input id='ibs-feed-name-$feed' name='ibs_calendar_options[feeds][$curr_feed][name]' type='text' placeholder='feed name' size='25' " . $color . " value='$value' />" . self::colors($feed, $color) . "</div>";
+            echo "<div class='feed-div'><span>Name</span><input id='ibs-feed-name-$feed' name='ibs_calendar_options[feeds][$curr_feed][name]' type='text' placeholder='feed name' size='25' " . $color . " value='$value' />" . self::colors($feed, $bg) . "</div>";
             $checked = isset(self::$options['feeds'][$curr_feed]['enabled']) && self::$options['feeds'][$curr_feed]['enabled'] == 'yes' ? 'checked' : '';
             echo "<div class='feed-div'><span>Enabled</span><input name='ibs_calendar_options[feeds][$curr_feed][enabled]' value='yes' $checked type='checkbox'/></div>";
             $value = isset(self::$options['feeds'][$curr_feed]['url']) ? self::$options['feeds'][$curr_feed]['url'] : '';
@@ -462,7 +457,7 @@ class IBS_CALENDAR {
         echo "<div><input id='test-qtip' type='text' style='width:600px' value='$value'/></div>";
     }
 
-    //=====================================================================================================================================    
+//=====================================================================================================================================    
     static function admin_add_page() {
         add_options_page('IBS Calendar', 'IBS Calendar', 'manage_options', 'ibs_calendar', array(__CLASS__, 'admin_options_page'));
     }
@@ -554,8 +549,8 @@ class IBS_CALENDAR {
     }
 
     static function register_script() {
-        $min = self::$debug ? '' : '.min';
-        $theme = self::$ui_theme;
+        $min = self::$options['debug'] ? '' : '.min';
+        $theme = self::$options['ui_theme'];
         wp_register_style('ibs-calendar-ui-theme-style', plugins_url("css/jquery-ui-themes-1.11.1/themes/$theme/jquery-ui.min.css", __FILE__));
         wp_register_style('ibs-calendar-style', plugins_url("css/calendar.css", __FILE__));
 
@@ -577,13 +572,7 @@ class IBS_CALENDAR {
         wp_register_style("ibs-dropdown-style", plugins_url("js/jquery.dropdown/jquery.dropdown.css", __FILE__));
         wp_register_script("ibs-dropdown-script", plugins_url("js/jquery.dropdown/jquery.dropdown.min.js", __FILE__));
 
-        wp_register_style('ibs-calendar-event-style', plugins_url('css/calendar-event.css', __FILE__));
-        wp_register_script('ibs-calendar-event-script', plugins_url("js/calendar-event$min.js", __FILE__));
-
         wp_register_script('rrule-rrule-script', plugins_url("js/rrule$min.js", __FILE__));
-
-        wp_register_style('ibs-timepicker-style', plugins_url('css/ibs-timepicker.css', __FILE__));
-        wp_register_script('ibs-timepicker-script', plugins_url("js/ibs-timepicker$min.js", __FILE__));
     }
 
     static $core_handles = array(
@@ -656,7 +645,7 @@ class IBS_CALENDAR {
     }
 
     static function print_script_footer() {
-        //load our stuff only if needed
+//load our stuff only if needed
         if (self::$add_script > 0) {
             self::print_admin_scripts();
             wp_print_styles(self::$style_handles);
@@ -664,78 +653,39 @@ class IBS_CALENDAR {
         }
     }
 
-    static function ajax() {
-        //add json event source logic here
-        $events = array();
-        echo json_encode($events);
-    }
-
-    static function file_credentials() {
-        $in = true;
-        $url = wp_nonce_url('options-general.php?page=filewriting', 'ibs-nonce');
-        if (false === ($creds = request_filesystem_credentials($url, '', false, false, null))) {
-            $in = false;
-        }
-        if ($in && !WP_Filesystem($creds)) {
-            request_filesystem_credentials($url, '', true, false, null);
-            $in = false;
-        }
-        return $in;
-    }
-
-    static function base_path() {
-        $path = wp_upload_dir();
-        $path = $path['basedir'] . '/ibs-files';
-        return $path;
-    }
-
-    static function db_path() {
-        return self::base_path() . '/events/events.db';
-    }
-
-    static function get_db() {
-        if (file_exists(self::db_path())) {
-            try {
-                $buffer = file_get_contents(self::db_path());
-            } catch (Exception $e) {
-                echo $e->getMessage();
-                exit;
+    static function get_ibs_events() {
+        Global $post;
+        $query_args = array(
+            'post_type' => 'ibs_event',
+            'posts_per_page' => 9999,
+            'post_status' => 'publish',
+            'ignore_sticky_posts' => true,
+            'meta_query' => ''
+        );
+        $result = array();
+        $events = new WP_Query($query_args);
+        while ($events->have_posts()) {
+            $events->the_post();
+            $item = array(
+                'id' => 'IBS-' . $post->ID,
+                'title' => get_the_title($post->ID),
+                'start' => get_post_meta($post->ID, 'ibs-event-start', true),
+                'end' => get_post_meta($post->ID, 'ibs-event-end', true),
+                'allDay' => get_post_meta($post->ID, 'ibs-event-allday', true),
+                'color' => get_post_meta($post->ID, 'ibs-event-color', true),
+                'repeat' => get_post_meta($post->ID, 'ibs-event-repeat', true),
+                'recurr' => get_post_meta($post->ID, 'ibs-event-recurr', true),
+                'exceptions' => get_post_meta($post->ID, 'ibs-event-exceptions', true),
+                'url' => get_the_permalink($post->ID),
+                'description' => get_the_excerpt()
+            );
+            if (false === $item['recurr']) {
+                $item['repeat'] = null;
+                $item['exceptions'] = null;
             }
-            $result = rawurlencode($buffer);
-            echo $result;
-            exit;
-        } else {
-            echo '';
-            exit;
+            $result[] = $item;
         }
-    }
-
-    static function put_db() {
-        if (isset($_REQUEST['data']) && !empty($_REQUEST['data'])) {
-            $data = $_REQUEST['data'];
-            $data = stripslashes($data);
-            if (self::file_credentials()) {
-                global $wp_filesystem;
-                $filename = self::base_path();
-                if (false === is_dir($filename)) {
-                    $wp_filesystem->mkdir($filename);
-                }
-                $filename .= '/events';
-                if (false === is_dir($filename)) {
-                    $wp_filesystem->mkdir($filename);
-                }
-                $filename .= '/events.db';
-                $r = unlink($filename);
-                if ($wp_filesystem->put_contents($filename, $data, FS_CHMOD_FILE)) {
-                    exit;
-                }
-                echo "Error writing database" . basename($filename);
-                exit;
-            }
-            echo 'No file permissions';
-            exit;
-        }
-        echo 'Missing data';
+        echo json_encode($result);
         exit;
     }
 

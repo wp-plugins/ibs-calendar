@@ -107,6 +107,7 @@ class IBS_WCalendar extends WP_Widget {
         $args['headerRight'] = 'next';
         $args['titleFormat'] = 'MMM YYYY';
         $args['dayNamesShort'] = array('Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa');
+        $args['eventLimit'] = false;
         $args['eventLimitClick'] = 'popover';
         $args['aspectRatio'] = null;
         $args['height'] = (int) $instance['cal_height'];
