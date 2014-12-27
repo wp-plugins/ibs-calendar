@@ -48,14 +48,13 @@ How can I hide the event titles? Because calendars can be configured such that t
 This yields a solid bar as the event title.
 
 == Screenshots ==
-1. A calendar view
-2. Settings tab.
-3. Options for Full Calendar.
-4. Feeds for Google Calendars
-5. Tooltip styling tab.
-6. Shortcode generator.
-7. Widget
-8. Widget admin
+1. Settings tab.
+2. Options for Full Calendar.
+3. Feeds for Google Calendars
+4. Tooltip styling tab.
+5. Shortcode generator.
+6. Widget
+7. Widget admin
 
 == Changelog ==
 
