@@ -215,7 +215,17 @@ function CalendarObj($, args, mode) {
                                 for (var ex in cal.ibs_events) {
                                     var event = cal.ibs_events[ex];
                                     if (false == event.recurr) {
-                                        if (moment(event.start).unix() >= start.unix() && moment(event.end).unix() <= end.unix()) {
+                                        var s, e, es, ee;
+                                        s = start.unix();
+                                        e = end.unix();
+                                        es = moment(event.start).unix();
+                                        ee = moment(event.end).unix();
+                                        //      s---------------------e
+                                        //          es---------ee                       (es >= s && en <= e) ||
+                                        //  es----------ee                              ( ee > s && ee < e) ||
+                                        //                    es---------ee             (es >= s && es <= e) || 
+                                        //  es----------------------------------ee      (s >= es && e <= ee) || 
+                                        if((es >= s && ee <= e) || (ee > s && ee < e) || (es >= s && es <= e) || (s >= es && e <= ee)){
                                             result.push(event);
                                         }
                                     } else {

@@ -89,7 +89,8 @@ class IBS_CALENDAR {
             "weekNumberTitle" => 'W',
             "timeZone" => "local",
             "qtip" => array('style' => "qtip-bootstrap", 'rounded' => 'qtip-rounded', 'shadow' => 'qtip-shadow'),
-            "hideTitle" => false
+            "hideTitle" => false,
+            "defaultDate" => ''
         );
         foreach ($arr as $key => $value) {
             if (!isset($options[$key])) {
@@ -517,7 +518,7 @@ class IBS_CALENDAR {
         $args['id'] = self::$add_script;
         $id = self::$add_script;
 
-        $html = '<div id="ibs-calendar-id" class="aligncenter" style="width:%w;" >
+        $html = '<div id="ibs-calendar-id" class="alignleft" style="width:%w;" >
             <form id="fullcalendar-id" >
                 <div id="ibs-loading-id" ></div>
             </form>
