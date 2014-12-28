@@ -6,7 +6,7 @@ Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 0.4
+Stable tag: 0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,5 +62,6 @@ This yields a solid bar as the event title.
 2014-11-27 Added required Google Calendar API Key
 2014-12-02 Version 0.3 adds a IBS calendar widget using Full Calendar.
 2014-12-27 Version 0.4 adds several more Full Calendar options and support for IBS Events calendar feed.
+2014-13-28 Version 0.5 fixes IBS Event display problem.
 
 == Upgrade Notice ==
