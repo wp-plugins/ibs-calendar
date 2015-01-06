@@ -40,6 +40,7 @@ class IBS_CALENDAR {
         if (isset(self::$options['version']) === false || self::$options['version'] !== IBS_CALENDAR_VERSION) {
             self::defaults();  //development set new options
         }
+        self::fixBool(self::$options);
         add_action('admin_init', array(__CLASS__, 'admin_options_init'));
         add_action('admin_menu', array(__CLASS__, 'admin_add_page'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_scripts'));
@@ -63,6 +64,30 @@ class IBS_CALENDAR {
             }
         }
     }
+
+    static function fixBool(&$options) {
+        foreach ($options as $key => $value) {
+            if ($key === 'eventLimit') {
+                continue;
+            }
+            if (is_array($value)) {
+                self::fixBool($value);
+            } else {
+                switch (strtolower($value)) {
+                    case "null" : $options[$key] = null;
+                        break;
+                    case "true" :
+                    case "yes" : $options[$key] = true;
+                        break;
+                    case "false" :
+                    case "no" : $options[$key] = false;
+                        break;
+                    default :
+                }
+            }
+        }
+    }
+
     static function defaults() { //jason_encode requires double quotes
         $options = (array) get_option('ibs_calendar_options');
         $arr = array(
@@ -108,7 +133,7 @@ class IBS_CALENDAR {
             "defaultDate" => ''
         );
         self::extendA($arr, $options);
-        $options['version'] = IBS_CALENDAR_VERSION;
+        self::fixBool($options);
         self::$options = $options;
         update_option('ibs_calendar_options', $options);
     }
@@ -183,6 +208,8 @@ class IBS_CALENDAR {
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
         $checked = self::$options['debug'] ? '' : "checked";
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="false"' . $checked . '/>&nbspNo';
+        $version = self::$options['version'];
+        echo "<input type='hidden' name='ibs_calendar_options[version]' value='$version'/>";
     }
 
     static function field_ibsEvents() {
@@ -541,17 +568,17 @@ class IBS_CALENDAR {
                 }
             }
         }
-        
-        if(isset($atts['repeats'])){
+
+        if (isset($atts['repeats'])) {
             $args['list_repeat'] = strtolower($atts['repeats']) === 'yes' ? true : false;
         }
-        if(isset($atts['past'])){
+        if (isset($atts['past'])) {
             $args['list_past'] = strtolower($atts['past']) === 'yes' ? true : false;
         }
-        if(isset($atts['max'])){
+        if (isset($atts['max'])) {
             $args['list_max'] = strtolower($atts['max']) === 'yes' ? true : false;
         }
-        
+
         self::fix_args($args);
         $args['ajaxData'] = array("action" => "ibs_calendar_ajax", "type" => "event");
         $args['ajaxUrl'] = admin_url("admin-ajax.php");
