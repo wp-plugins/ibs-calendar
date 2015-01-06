@@ -214,8 +214,7 @@ class IBS_CALENDAR {
         echo "<input type='hidden' name='ibs_calendar_options[version]' value='$version'/>";
         $defaultDate = self::$options['defaultDate'];
         echo "<input type='hidden' name='ibs_calendar_options[defaultDate]' value='$defaultDate'/>";
-        $hideTitle = isset(self::$options['hideTitle']) ? 'yes' : 'no';
-        echo "<input type='hidden' name='ibs_calendar_options[hideTitle]' value='$hideTitle'/>";
+        echo "<input type='hidden' name='ibs_calendar_options[hideTitle]' value='no'/>";
     }
 
     static function field_ibsEvents() {
