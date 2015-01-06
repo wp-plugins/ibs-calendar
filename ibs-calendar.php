@@ -208,8 +208,14 @@ class IBS_CALENDAR {
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
         $checked = self::$options['debug'] ? '' : "checked";
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="false"' . $checked . '/>&nbspNo';
+        
+        
         $version = self::$options['version'];
         echo "<input type='hidden' name='ibs_calendar_options[version]' value='$version'/>";
+        $defaultDate = self::$options['defaultDate'];
+        echo "<input type='hidden' name='ibs_calendar_options[defaultDate]' value='$defaultDate'/>";
+        $hideTitle = isset(self::$options['hideTitle']) ? 'yes' : 'no';
+        echo "<input type='hidden' name='ibs_calendar_options[hideTitle]' value='$hideTitle'/>";
     }
 
     static function field_ibsEvents() {
