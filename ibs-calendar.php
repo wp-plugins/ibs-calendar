@@ -16,7 +16,7 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-define('IBS_CALENDAR_VERSION', '0.4');
+define('IBS_CALENDAR_VERSION', '1.0');
 register_activation_hook(__FILE__, 'ibs_calendar_defaults');
 
 function ibs_calendar_defaults() {
@@ -32,11 +32,12 @@ function ibs_calendar_deactivate() {
 class IBS_CALENDAR {
 
     static $add_script = 0;
+    static $add_script_gcal_list = 0;
     static $options = array();
 
     static function init() {
         self::$options = get_option('ibs_calendar_options');
-        if(isset(self::$options['version']) === false || self::$options['version'] !== IBS_CALENDAR_VERSION) {
+        if (isset(self::$options['version']) === false || self::$options['version'] !== IBS_CALENDAR_VERSION) {
             self::defaults();  //development set new options
         }
         add_action('admin_init', array(__CLASS__, 'admin_options_init'));
@@ -52,6 +53,16 @@ class IBS_CALENDAR {
         add_action('wp_ajax_nopriv_ibs_calendar_get_events', array(__CLASS__, 'get_ibs_events'));
     }
 
+    static function extendA($a, &$b) {
+        foreach ($a as $key => $value) {
+            if (!isset($b[$key])) {
+                $b[$key] = $value;
+            }
+            if (is_array($value)) {
+                self::extendA($value, $b[$key]);
+            }
+        }
+    }
     static function defaults() { //jason_encode requires double quotes
         $options = (array) get_option('ibs_calendar_options');
         $arr = array(
@@ -60,9 +71,13 @@ class IBS_CALENDAR {
             "ibsEvents" => false,
             "ui_theme" => "cupertino",
             "event_list" => "none",
+            "list_past" => false,
+            "list_max" => 100,
+            "list_repeat" => false,
             "feedCount" => 3,
             "theme" => true,
             "width" => "100%",
+            "align" => "alignleft",
             "height" => null,
             "firstDay" => "1",
             "weekends" => true,
@@ -75,7 +90,7 @@ class IBS_CALENDAR {
             "aspectRatio" => 1.0,
             "editable" => false,
             "feeds" => array(
-                "feed_1" => array('name' => 'google holidays', 'enabled' => 'yes', 'url' => 'https://www.google.com/calendar/feeds/en.usa%23holiday%40group.v.calendar.google.com/public/basic', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue'),
+                "feed_1" => array('name' => 'Google holidays', 'enabled' => 'yes', 'url' => 'en.usa#holiday@group.v.calendar.google.com', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue'),
                 "feed_2" => array('name' => '', 'enabled' => 'no', 'url' => '', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue'),
                 "feed_3" => array('name' => '', 'enabled' => 'no', 'url' => '', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue')),
             "headerLeft" => 'prevYear,prev,next,nextYear today',
@@ -92,28 +107,9 @@ class IBS_CALENDAR {
             "hideTitle" => false,
             "defaultDate" => ''
         );
-        foreach ($arr as $key => $value) {
-            if (!isset($options[$key])) {
-                $options[$key] = $value;
-            }
-        }
-        foreach ($options as $key => $value) {
-            if ($key === 'eventLimit') {
-                continue;
-            }
-            switch ($value) {
-                case "null" : $option[$key] = null;
-                    break;
-                case "true" :
-                case "yes" : $options[$key] = true;
-                    break;
-                case "false" :
-                case "no" : $options[$key] = false;
-                    break;
-            }
-        }
+        self::extendA($arr, $options);
+        $options['version'] = IBS_CALENDAR_VERSION;
         self::$options = $options;
-        self::$options['version'] = IBS_CALENDAR_VERSION;
         update_option('ibs_calendar_options', $options);
     }
 
@@ -122,9 +118,14 @@ class IBS_CALENDAR {
         add_settings_section('calendar-section-general', '', array(__CLASS__, 'admin_general_header'), 'calendar-general');
         add_settings_field('debug', 'debug', array(__CLASS__, 'field_debug'), 'calendar-general', 'calendar-section-general');
         add_settings_field('ui_theme', 'ui theme', array(__CLASS__, 'field_ui_theme'), 'calendar-general', 'calendar-section-general');
+        add_settings_field('align', 'calendar align', array(__CLASS__, 'field_align'), 'calendar-general', 'calendar-section-general');
         add_settings_field('width', 'calendar width', array(__CLASS__, 'field_width'), 'calendar-general', 'calendar-section-general');
-        add_settings_field('ibsEvents', 'IBS Events', array(__CLASS__, 'field_ibsEvents'), 'calendar-general', 'calendar-section-general');
+        add_settings_field('ibsEvents', 'Show IBS Events', array(__CLASS__, 'field_ibsEvents'), 'calendar-general', 'calendar-section-general');
         add_settings_field('event_list', 'event list', array(__CLASS__, 'field_event_list'), 'calendar-general', 'calendar-section-general');
+
+        add_settings_field('list_max', 'List max events', array(__CLASS__, 'field_list_max'), 'calendar-general', 'calendar-section-general');
+        add_settings_field('list_past', 'List past events', array(__CLASS__, 'field_list_past'), 'calendar-general', 'calendar-section-general');
+        add_settings_field('list_repeat', 'List repeat events', array(__CLASS__, 'field_list_repeat'), 'calendar-general', 'calendar-section-general');
 
         add_settings_section('section_fullcalendar', '', array(__CLASS__, 'admin_options_header'), 'fullcalendar');
         add_settings_field('aspectRatio', 'aspectRatio', array(__CLASS__, 'field_aspectRatio'), 'fullcalendar', 'section_fullcalendar');
@@ -169,7 +170,7 @@ class IBS_CALENDAR {
     }
 
     static function admin_feeds_header() {
-        echo '<div class="ibs-admin-bar" >Calendar feeds</div>';
+        echo '<div class="ibs-admin-bar" >Google Calendar feeds</div>';
     }
 
     static function field_feedCount() {
@@ -179,7 +180,6 @@ class IBS_CALENDAR {
 
     static function field_debug() {
         $checked = self::$options['debug'] ? "checked" : '';
-        echo '<p>determines whether to use minimized javascript</p>';
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
         $checked = self::$options['debug'] ? '' : "checked";
         echo '<input type="radio" name="ibs_calendar_options[debug]" value="false"' . $checked . '/>&nbspNo';
@@ -241,6 +241,36 @@ class IBS_CALENDAR {
         echo '<option value="show" ' . $selected . '>Show</option>';
         $selected = self::$options['event_list'] == "hide" ? 'selected' : '';
         echo '<option value="hide" ' . $selected . '>Hide</option>';
+        echo '</select>';
+    }
+
+    static function field_list_past() {
+        $checked = self::$options['list_past'] ? "checked" : '';
+        echo '<input type="radio" name="ibs_calendar_options[list_past]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
+        $checked = self::$options['list_past'] ? '' : "checked";
+        echo '<input type="radio" name="ibs_calendar_options[list_past]" value="false"' . $checked . '/>&nbspNo';
+    }
+
+    static function field_list_repeat() {
+        $checked = self::$options['list_repeat'] ? "checked" : '';
+        echo '<input type="radio" name="ibs_calendar_options[list_repeat]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
+        $checked = self::$options['list_repeat'] ? '' : "checked";
+        echo '<input type="radio" name="ibs_calendar_options[list_repeat]" value="false"' . $checked . '/>&nbspNo';
+    }
+
+    static function field_list_max() {
+        $value = self::$options['list_max'];
+        echo '<input name="ibs_calendar_options[list_max]" min="1" max="1000" step="1" placeholder="number of feeds" type="number" value="' . $value . '" />';
+    }
+
+    static function field_align() {
+        echo '<select name="ibs_calendar_options[align]"  />';
+        $selected = self::$options['align'] == "alignleft" ? 'selected' : '';
+        echo '<option value="alignleft" ' . $selected . '>left</option>';
+        $selected = self::$options['align'] == "aligncenter" ? 'selected' : '';
+        echo '<option value="aligncenter" ' . $selected . '>center</option>';
+        $selected = self::$options['align'] == "alignright" ? 'selected' : '';
+        echo '<option value="alignright" ' . $selected . '>right</option>';
         echo '</select>';
     }
 
@@ -378,9 +408,9 @@ class IBS_CALENDAR {
             $checked = isset(self::$options['feeds'][$curr_feed]['enabled']) && self::$options['feeds'][$curr_feed]['enabled'] == 'yes' ? 'checked' : '';
             echo "<div class='feed-div'><span>Enabled</span><input name='ibs_calendar_options[feeds][$curr_feed][enabled]' value='yes' $checked type='checkbox'/></div>";
             $value = isset(self::$options['feeds'][$curr_feed]['url']) ? self::$options['feeds'][$curr_feed]['url'] : '';
-            echo "<div class='feed-div' ><span>Address</span><input id='ibs-feed-url-$feed'name='ibs_calendar_options[feeds][$curr_feed][url]' type='text' placeholder='Google Calendar Address (XML or Calendar ID)' size='100' value='$value' /></div>";
+            echo "<div class='feed-div' ><span>ID</span><input id='ibs-feed-url-$feed'name='ibs_calendar_options[feeds][$curr_feed][url]' type='text' placeholder='Google Calendar Address (XML or Calendar ID)' size='100' value='$value' /></div>";
             $value = isset(self::$options['feeds'][$curr_feed]['key']) ? self::$options['feeds'][$curr_feed]['key'] : '';
-            echo "<div class='feed-div' ><span>Key</span><input id='ibs-feed-key-$feed'name='ibs_calendar_options[feeds][$curr_feed][key]' type='text' placeholder='Google API Key' size='100' value='$value' /></div>";
+            echo "<div class='feed-div' ><span>Key</span><input id='ibs-feed-key-$feed'name='ibs_calendar_options[feeds][$curr_feed][key]' type='text' placeholder='Optional Google API Key' size='100' value='$value' /></div>";
             $value = isset(self::$options['feeds'][$curr_feed]['color']) ? self::$options['feeds'][$curr_feed]['textColor'] : '#ffffff';
             echo "<input id='colorpicker-fg-$feed' type='hidden' feed='#ibs-feed-url-$feed' css='color' name='ibs_calendar_options[feeds][$curr_feed][textColor]' value='" . $value . "' />";
             $value = isset(self::$options['feeds'][$curr_feed]['backgroundColor']) ? self::$options['feeds'][$curr_feed]['backgroundColor'] : '#5484ed';
@@ -458,7 +488,6 @@ class IBS_CALENDAR {
         echo "<div><input id='test-qtip' type='text' style='width:600px' value='$value'/></div>";
     }
 
-//=====================================================================================================================================    
     static function admin_add_page() {
         add_options_page('IBS Calendar', 'IBS Calendar', 'manage_options', 'ibs_calendar', array(__CLASS__, 'admin_options_page'));
     }
@@ -512,13 +541,24 @@ class IBS_CALENDAR {
                 }
             }
         }
+        
+        if(isset($atts['repeats'])){
+            $args['list_repeat'] = strtolower($atts['repeats']) === 'yes' ? true : false;
+        }
+        if(isset($atts['past'])){
+            $args['list_past'] = strtolower($atts['past']) === 'yes' ? true : false;
+        }
+        if(isset($atts['max'])){
+            $args['list_max'] = strtolower($atts['max']) === 'yes' ? true : false;
+        }
+        
         self::fix_args($args);
         $args['ajaxData'] = array("action" => "ibs_calendar_ajax", "type" => "event");
         $args['ajaxUrl'] = admin_url("admin-ajax.php");
         $args['id'] = self::$add_script;
         $id = self::$add_script;
 
-        $html = '<div id="ibs-calendar-id" class="alignleft" style="width:%w;" >
+        $html = '<div id="ibs-calendar-id" class="' . $args['align'] . '" style="width:%w;" >
             <form id="fullcalendar-id" >
                 <div id="ibs-loading-id" ></div>
             </form>
@@ -553,7 +593,6 @@ class IBS_CALENDAR {
         $min = self::$options['debug'] ? '' : '.min';
         $theme = self::$options['ui_theme'];
         wp_register_style('ibs-calendar-ui-theme-style', plugins_url("css/jquery-ui-themes-1.11.1/themes/$theme/jquery-ui.min.css", __FILE__));
-        wp_register_style('ibs-calendar-style', plugins_url("css/calendar.css", __FILE__));
 
         wp_register_script('ibs-calendar-script', plugins_url("js/calendar$min.js", __FILE__), self::$core_handles);
         wp_register_script('ibs-moment-script', plugins_url("js/moment$min.js", __FILE__));
@@ -601,7 +640,6 @@ class IBS_CALENDAR {
     );
     static $style_handles = array(
         'ibs-calendar-ui-theme-style',
-        'ibs-calendar-style',
         'ibs-fullcalendar-style',
         'ibs-qtip_style'
     );
@@ -645,12 +683,23 @@ class IBS_CALENDAR {
         
     }
 
+    static $script_handles_gcal_list = array(
+        'ibs-gcal-events-script',
+        'ibs-moment-script'
+    );
+    static $style_handles_gcal_list = array(
+        'ibs-gcal-events-style'
+    );
+
     static function print_script_footer() {
-//load our stuff only if needed
         if (self::$add_script > 0) {
             self::print_admin_scripts();
             wp_print_styles(self::$style_handles);
             wp_print_scripts(self::$script_handles);
+        }
+        if (self::$add_script_gcal_list > 0) {
+            wp_print_styles(self::$style_handles_gcal_list);
+            wp_print_scripts(self::$script_handles_gcal_list);
         }
     }
 

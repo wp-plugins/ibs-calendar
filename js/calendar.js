@@ -32,9 +32,9 @@ function CalendarObj($, args, mode) {
         }
         this.args = args;
         this.mode = mode;
-        var id = args['id'];
+        this.id = args['id'];
         this.ibs_events;
-        this.calendar = $('#fullcalendar-' + id);
+        this.calendar = $('#fullcalendar-' + this.id);
         this.options = {
             'id': '1',
             'feeds': {},
@@ -55,15 +55,19 @@ function CalendarObj($, args, mode) {
                     + ';" >';
             bg = '<p style="background-color:silver; color: black;" >';
             var loc = '';
-            if (typeof event.location !== 'undefined') {
+            if (typeof event.location !== 'undefined' && event.location !== '') {
                 loc = '<p>' + 'Location: ' + event.location + '</p>';
             }
             var desc = '';
-            if (typeof event.description !== 'undefined') {
+            if (typeof event.description !== 'undefined' && event.description !== '') {
                 desc = '<p>' + event.description + '</p>'
             }
+            var time = moment(event.start).format("ddd MMM DD " + fmt) + moment(event.end).format(' - ' + fmt);
+            if (event.allDay) {
+                time = 'All day';
+            }
             return {
-                content: {'text': '<p>' + event.title + '</p>' + loc + desc + '<p>' + moment(event.start).format("ddd MMM DD " + fmt) + moment(event.end).format(' - ' + fmt) + '</p>'},
+                content: {'text': '<p>' + event.title + '</p>' + loc + desc + '<p>' + time + '</p>'},
                 position: {
                     my: 'bottom center',
                     at: 'top center'
@@ -129,16 +133,48 @@ function CalendarObj($, args, mode) {
                 element.qtip(cal.qtip_params(event));
             }
         };
+        this.fullcalendar_options.dayClick = function (date_moment, jsEvent, view) {
+            if (mode !== 'widget') {
+                switch (view.name) {
+                    case 'month' :
+                        $(cal.calendar).fullCalendar('changeView', 'agendaWeek');
+                        $(cal.calendar).fullCalendar('gotoDate', date_moment);
+                        break;
+                    case 'basicWeek':
+                    case 'agendaWeek':
+                        $(cal.calendar).fullCalendar('changeView', 'agendaDay');
+                        $(cal.calendar).fullCalendar('gotoDate', date_moment);
+                        break;
+                    case 'basicDay':
+                    case 'agendaDay':
+                        break;
+                }
+            }
+        };
         this.fullcalendar_options.eventAfterAllRender = function (view) {
-            if (args.event_list !== 'none' && $('#list-display-' + id).is(':checked')) {
+            if (args.event_list !== 'none' && $('#list-display-' + cal.id).is(':checked')) {
 
-                var event_list = '#event-list-' + id;
-                var event_table = '#event-table-' + id;
-                var fullcalendar = "#fullcalendar-" + id;
+                var event_list = '#event-list-' + cal.id;
+                var event_table = '#event-table-' + cal.id;
+                var fullcalendar = "#fullcalendar-" + cal.id;
                 var events = $(fullcalendar).fullCalendar('clientEvents');
                 events.sort(function (a, b) {
                     return moment(a.start) - moment(b.start);
                 });
+                var result = [];
+                if (args.list_past === false || args.list_repeat === false) {
+                    for (var i = 0; i < events.length; i++) {
+                        if(typeof events[i].repeat === 'string' && (events[i].repeat !== null && events[i].repeat !== '') && args.list_repeat === false){
+                            continue;
+                        }
+                        if( args.list_past === false && moment() > moment(events[i].start)){
+                            continue;
+                        }
+                        result.push(events[i]);
+                    }
+                    events = result;
+                }
+                events = events.slice(0, args.list_max);
                 $(event_table).empty();
                 if (mode !== 'widget') {
                     $(event_table).css({'border': '1px solid silver'})
@@ -151,16 +187,16 @@ function CalendarObj($, args, mode) {
                                             ));
                     for (var i = 0; i < events.length; i++) {
                         var pattern = 'ddd Do';
-                        var past = moment() > moment(events[i].start) ? 'line-through' : 'none';
+                        var past = moment() > moment(events[i].start) ? '*' : '';
                         var d = moment(events[i].start).format(pattern);
                         var t = moment(events[i].start).format(cal.fullcalendar_options.timeFormat);
                         $(event_table).find('tbody')
-                                .append($('<tr>').qtip(cal.qtip_params(events[i]))
-                                        .css({'text-decoration': past})
+                                .append($('<tr>')
+                                        .attr({'disabled': past})
                                         .append($('<td>').text(d).css('padding', '3px'))
                                         .append($('<td>').text(t).css('padding', '3px'))
                                         .append($('<td>')
-                                                .append($('<a>').attr({href: events[i].url}).text(events[i].title).addClass('calendar-list-title').css('padding', '3px')))
+                                                .append($('<a>').attr({href: events[i].url}).text(past+events[i].title)))
                                         .append($('<td>').text(events[i].location).css('padding', '3px'))
                                         );
                     }
@@ -171,12 +207,11 @@ function CalendarObj($, args, mode) {
                                             .append($('<th>').text('Events').css('padding', '3px'))
                                             ));
                     for (var i = 0; i < events.length; i++) {
-                        var past = moment() > moment(events[i].start) ? 'line-through' : 'none';
+                        past = moment() > moment(events[i].start) ? '*' : '';
                         $(event_table).find('tbody')
                                 .append($('<tr>').qtip(cal.qtip_params(events[i]))
-                                        .css({'text-decoration': past})
                                         .append($('<td>')
-                                                .append($('<a>').attr({href: events[i].url}).text(events[i].title).addClass('calendar-list-title').css('padding', '3px')))
+                                                .append($('<a>').attr({href: events[i].url}).text(past+events[i].title)))
                                         );
                     }
 
@@ -186,9 +221,9 @@ function CalendarObj($, args, mode) {
         this.renderCalendar = function () {
 
             if (args.event_list === 'none') {
-                $('#list-display-' + id).parent().css('display', 'none');
+                $('#list-display-' + cal.id).parent().css('display', 'none');
             } else {
-                $('#list-display-' + id).prop('checked', args.event_list === 'show');
+                $('#list-display-' + cal.id).prop('checked', args.event_list === 'show');
             }
             this.calendar.fullCalendar(this.fullcalendar_options);
             for (var feed in this.options.feeds) {
@@ -225,7 +260,7 @@ function CalendarObj($, args, mode) {
                                         //  es----------ee                              ( ee > s && ee < e) ||
                                         //                    es---------ee             (es >= s && es <= e) || 
                                         //  es----------------------------------ee      (s >= es && e <= ee) || 
-                                        if((es >= s && ee <= e) || (ee > s && ee < e) || (es >= s && es <= e) || (s >= es && e <= ee)){
+                                        if ((es >= s && ee <= e) || (ee > s && ee < e) || (es >= s && es <= e) || (s >= es && e <= ee)) {
                                             result.push(event);
                                         }
                                     } else {
@@ -287,14 +322,14 @@ function CalendarObj($, args, mode) {
             }
             if (args.event_list !== 'none') {
                 if (args.event_list === 'show') {
-                    $('#event-list-' + id).show();
+                    $('#event-list-' + cal.id).show();
                 }
-                $('#list-display-' + id).click(function (event) {
-                    if ($('#list-display-' + id).is(':checked')) {
-                        $('#fullcalendar-' + id).fullCalendar('rerenderEvents');
-                        $('#event-list-' + id).show();
+                $('#list-display-' + cal.id).click(function (event) {
+                    if ($('#list-display-' + cal.id).is(':checked')) {
+                        $('#fullcalendar-' + cal.id).fullCalendar('rerenderEvents');
+                        $('#event-list-' + cal.id).show();
                     } else {
-                        $('#event-list-' + id).hide();
+                        $('#event-list-' + cal.id).hide();
                     }
                 });
             }
@@ -332,4 +367,4 @@ function CalendarObj($, args, mode) {
         }
 
     };
-})(jQuery);
+}(jQuery));

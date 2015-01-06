@@ -16,6 +16,9 @@ class IBS_WCalendar extends WP_Widget {
     public function form($instance) {
         $widget_defaults = array(
             'title' => 'IBS Calendar',
+            'list_max' => 50,
+            'list_repeat'=> false,
+            'list_past'=> false,
             'cal_height' => 300,
             'has_list' => 'none',
             'lst_height' => 300,
@@ -37,6 +40,22 @@ class IBS_WCalendar extends WP_Widget {
                 </select>
             </label></div>
         <p></p>
+        
+         <div class="widefat"><label for="<?php echo $this->get_field_id('list_max'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List max events'; ?></span>
+                <input type="number" min=1 max=100 id="<?php echo $this->get_field_id('list_max'); ?>" name="<?php echo $this->get_field_name('list_max'); ?>"  value="<?php echo esc_attr($instance['list_max']); ?>">
+                </label></div>
+        <p></p>
+        
+        <div class="widefat"><label for="<?php echo $this->get_field_id('list_past'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List past events'; ?></span>
+                <input type="checkbox" id="<?php echo $this->get_field_id('list_past'); ?>" name="<?php echo $this->get_field_name('list_past'); ?>"  <?php echo esc_attr($instance['list_past']) === 'yes' ? 'checked' : ''; ?> value="yes">
+                </label></div>
+        <p></p>
+        
+        <div class="widefat"><label for="<?php echo $this->get_field_id('list_repeat'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List repeat events'; ?></span>
+                <input type="checkbox" id="<?php echo $this->get_field_id('list_repeat'); ?>" name="<?php echo $this->get_field_name('list_repeat'); ?>"  <?php echo esc_attr($instance['list_repeat']) === 'yes' ? 'checked' : ''; ?>  value="yes">
+                </label></div>
+        <p></p>
+        
         <div class="widefat"><label for="<?php echo $this->get_field_id('cal_height'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'Calendar height'; ?></span>
                 <input type="number" min=200 max=1000 id="<?php echo $this->get_field_id('cal_height'); ?>" name="<?php echo $this->get_field_name('cal_height'); ?>"  value="<?php echo esc_attr($instance['cal_height']); ?>">
                 &nbsp;px</label></div>
@@ -95,8 +114,10 @@ class IBS_WCalendar extends WP_Widget {
                 $args['feeds']['feed_' . $i]['enabled'] = 'no';
             }
         }
+        $args['list_max'] = (int) $instance['list_max'];
+        $args['list_past'] = isset($instance['list_past']);
+        $args['list_repeat'] = isset($instance['list_repeat']);
         $args['width'] = '100%';
-        //$args['height'] =300;
         $args['weekends'] = true;
         $args['theme'] = false;
         $args['editable'] = false;

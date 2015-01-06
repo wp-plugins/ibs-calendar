@@ -13,14 +13,14 @@
                         jQuery(document).ready(function ($) {
 
                             $('#ibs-calendar-tab-calendar').parent()
-                                    .append($('<div id="ibs-calendar-1" style="max-width:<?PHP echo "1000px"; ?>">')
+                                    .append($('<div id="ibs-calendar-1" class="<?PHP echo $args['align']; ?>" style="max-width:<?PHP echo "1000px"; ?>">')
                                             .append($('<form id="fullcalendar-1" >'))
                                             .append($('<div id="ibs-loading-1" >'))
                                             .append($('<div>')
                                                     .append($('<input>').attr({'id': 'list-display-1', 'type': 'checkbox'}).css("margin", "10px"))
                                                     .append($('<span>').text(" Event List"))
                                                     .append($('<div>').attr('id', "event-list-1")
-                                                            .append($('<table>').attr('id', 'event-table-1')
+                                                            .append($('<table rules="all">').attr('id', 'event-table-1')
                                                                     ))
                                                     )
                                             );
@@ -113,6 +113,7 @@
             <?php do_settings_sections('qtip'); ?>
             <?php submit_button(); ?>
         </div>
+
     </form>
     <div id="ibs-calendar-tab-calendar">
         <div id="ibs-admin-div"></div>
@@ -136,7 +137,7 @@
                 </div>
             </div>
             <div><span>hideTitle</span><input type='checkbox' name='hideTitle' /></div>
-            <div><span>event_list</span><select name="eventlist">
+            <div><span>event_list</span><select name="event_list">
                     <option value="" selected ></option>
                     <option value="none">None</option>
                     <option value="show" >Show</option>
@@ -145,11 +146,18 @@
             </div>
             <div><span>ibsEvents</span><input type='checkbox' name='ibsEvents' /></div>
             <div><span>width</span><input name="width" type="text" size="25" value=""/></div>
+            <div><span>align</span><select name="align">
+                    <option value="" selected ></option>
+                    <option value="alignleft" >Left</option>
+                    <option value="aligncenter" >Center</option>
+                    <option value="alignright" >Right</option>
+                </select>
+            </div>
             <div><span>height</span><input id="ibs-sc-height" name="height" type="text" size="25" value=""/><a href="#" id="ibs-sc-height-help">help</a></div>
             <div><span>hiddenDays</span><input id="ibs-sc-hiddendays" name="hiddenDays" type="text" size="100" value=""/><a href="#" id="ibs-sc-hiddendays-help">help</a></div>
             <div><span>dayNamesShort</span><input id="ibs-sc-dns" name="dayNamesShort" type="text" size="100" value=""/><a href="#" id="ibs-sc-dns-help">help</a></div>
             <div><span>aspectRatio</span><input name="aspectRatio" min="0.1" max="5.0" step="0.1" type="number"/></div>
-            <div><span>defaultDate</span><input name="defualtDate" type="text" size="25" value=""/></div>
+            <div><span>defaultDate</span><input name="defaultDate" type="text" size="25" value=""/></div>
             <div><span>weekends</span><input type='checkbox' name='weekends' /></div>
             <div><span>theme</span><input type='checkbox' name='theme' /></div>
             <div><span>editable</span><input type='checkbox' name='editable'/></div>
