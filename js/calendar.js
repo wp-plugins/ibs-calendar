@@ -137,16 +137,6 @@ function CalendarObj($, args, mode) {
                 var event_table = '#event-table-' + cal.id;
                 var fullcalendar = "#fullcalendar-" + cal.id;
                 var events = $(fullcalendar).fullCalendar('clientEvents');
-                if (events.length === 0) {
-                    events.push({
-                        title: 'No events found',
-                        start: moment(),
-                        end: moment(),
-                        location: '',
-                        description: '',
-                        url: ''
-                    });
-                }
                 events.sort(function (a, b) {
                     return moment(a.start) - moment(b.start);
                 });

@@ -16,7 +16,7 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-define('IBS_CALENDAR_VERSION', '1.0');
+define('IBS_CALENDAR_VERSION', '1.1');
 register_activation_hook(__FILE__, 'ibs_calendar_defaults');
 
 function ibs_calendar_defaults() {
@@ -128,7 +128,7 @@ class IBS_CALENDAR {
 
     static function defaults() { //jason_encode requires double quotes
         $options = (array) get_option('ibs_calendar_options');
-        self::extendA($arr, $options);
+        self::extendA(self::$options_defaults, $options);
         array_walk_recursive($options, array(__CLASS__, 'fixBool'));
         $options['version'] = IBS_CALENDAR_VERSION;
         self::$options = $options;
@@ -617,7 +617,7 @@ class IBS_CALENDAR {
 
         wp_register_style('ibs-fullcalendar-style', plugins_url("js/fullcalendar-2.1.1/fullcalendar.min.css", __FILE__));
         wp_register_style('ibs-fullcalendar-print-style', plugins_url("js/fullcalendar-2.1.1/fullcalendar.print.min.css", __FILE__));
-        wp_register_script('ibs-fullcalendar-script', plugins_url("js/fullcalendar-2.1.1/fullcalendar.min.js", __FILE__));
+        wp_register_script('ibs-fullcalendar-script', plugins_url("js/fullcalendar-2.1.1/fullcalendar$min.js", __FILE__));
         wp_register_script('ibs-fullcalendar-gcal-script', plugins_url("js/fullcalendar-2.1.1/gcal.js", __FILE__));
         wp_register_script('ibs-fullcalendar-lang-all-script', plugins_url("js/fullcalendar-2.1.1/lang-all.js", __FILE__));
 
