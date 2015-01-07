@@ -34,13 +34,85 @@ class IBS_CALENDAR {
     static $add_script = 0;
     static $add_script_gcal_list = 0;
     static $options = array();
+    static $options_defaults = array(
+        "version" => IBS_CALENDAR_VERSION,
+        "debug" => false,
+        "ibsEvents" => false,
+        "ui_theme" => "cupertino",
+        "event_list" => "none",
+        "list_past" => false,
+        "list_max" => 100,
+        "list_repeat" => false,
+        "feedCount" => 3,
+        "theme" => false,
+        "width" => "100%",
+        "align" => "alignleft",
+        "height" => null,
+        "firstDay" => "1",
+        "weekends" => false,
+        "lang" => "en_us",
+        "titleFormat" => "MMM DD, YYYY",
+        "timeFormat" => "HH:mm",
+        "defaultView" => "month",
+        "eventLimit" => 'yes',
+        "eventLimitClick" => "popover",
+        "aspectRatio" => 1.0,
+        "editable" => false,
+        "feeds" => array(
+            "feed_1" => array('name' => 'Google Holidays', 'enabled' => false, 'url' => 'en.usa#holiday@group.v.calendar.google.com', 'key' => '', 'text_color' => 'white', 'background_color' => '#5484ed'),
+            "feed_2" => array('name' => '', 'enabled' => false, 'url' => '', 'key' => '', 'text_color' => 'white', 'background_color' => '#5484ed'),
+            "feed_3" => array('name' => '', 'enabled' => false, 'url' => '', 'key' => '', 'text_color' => 'white', 'background_color' => '#5484ed')),
+        "headerLeft" => 'prevYear,prev,next,nextYear today',
+        "headerCenter" => 'title',
+        "headerRight" => 'month agendaWeek agendaDay',
+        "hiddenDays" => '',
+        "dayNamesShort" => '',
+        "fixedWeekCount" => false,
+        "weekNumbers" => false,
+        "weekNumberCalculation" => 'local',
+        "weekNumberTitle" => 'W',
+        "timeZone" => "local",
+        "qtip" => array('style' => "qtip-bootstrap", 'rounded' => false, 'shadow' => false),
+        "hideTitle" => false,
+        "defaultDate" => ''
+    );
+
+    static function extendA($a, &$b) {
+        foreach ($a as $key => $value) {
+            if (!isset($b[$key])) {
+                $b[$key] = $value;
+            }
+            if (is_array($value)) {
+                self::extendA($value, $b[$key]);
+            }
+        }
+    }
+
+    static function fixBool(&$item, $key) {
+        if ($key === 'eventLimit') {
+            return;
+        }
+        switch (strtolower($item)) {
+            case "null" : $item = null;
+                break;
+            case "true" :
+            case "yes" : $item = true;
+                break;
+            case "false" :
+            case "no" : $item = false;
+                break;
+            default :
+        }
+    }
 
     static function init() {
         self::$options = get_option('ibs_calendar_options');
         if (isset(self::$options['version']) === false || self::$options['version'] !== IBS_CALENDAR_VERSION) {
             self::defaults();  //development set new options
+        } else {
+            self::extendA(self::$options_defaults, self::$options);
+            array_walk_recursive(self::$options, array(__CLASS__, 'fixBool'));
         }
-        self::fixBool(self::$options);
         add_action('admin_init', array(__CLASS__, 'admin_options_init'));
         add_action('admin_menu', array(__CLASS__, 'admin_add_page'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_scripts'));
@@ -54,86 +126,11 @@ class IBS_CALENDAR {
         add_action('wp_ajax_nopriv_ibs_calendar_get_events', array(__CLASS__, 'get_ibs_events'));
     }
 
-    static function extendA($a, &$b) {
-        foreach ($a as $key => $value) {
-            if (!isset($b[$key])) {
-                $b[$key] = $value;
-            }
-            if (is_array($value)) {
-                self::extendA($value, $b[$key]);
-            }
-        }
-    }
-
-    static function fixBool(&$options) {
-        foreach ($options as $key => $value) {
-            if ($key === 'eventLimit') {
-                continue;
-            }
-            if (is_array($value)) {
-                self::fixBool($value);
-            } else {
-                switch (strtolower($value)) {
-                    case "null" : $options[$key] = null;
-                        break;
-                    case "true" :
-                    case "yes" : $options[$key] = true;
-                        break;
-                    case "false" :
-                    case "no" : $options[$key] = false;
-                        break;
-                    default :
-                }
-            }
-        }
-    }
-
     static function defaults() { //jason_encode requires double quotes
         $options = (array) get_option('ibs_calendar_options');
-        $arr = array(
-            "version" => IBS_CALENDAR_VERSION,
-            "debug" => false,
-            "ibsEvents" => false,
-            "ui_theme" => "cupertino",
-            "event_list" => "none",
-            "list_past" => false,
-            "list_max" => 100,
-            "list_repeat" => false,
-            "feedCount" => 3,
-            "theme" => true,
-            "width" => "100%",
-            "align" => "alignleft",
-            "height" => null,
-            "firstDay" => "1",
-            "weekends" => true,
-            "lang" => "en_us",
-            "titleFormat" => "MMM DD, YYYY",
-            "timeFormat" => "HH:mm",
-            "defaultView" => "month",
-            "eventLimit" => false,
-            "eventLimitClick" => "popover",
-            "aspectRatio" => 1.0,
-            "editable" => false,
-            "feeds" => array(
-                "feed_1" => array('name' => 'Google holidays', 'enabled' => 'yes', 'url' => 'en.usa#holiday@group.v.calendar.google.com', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue'),
-                "feed_2" => array('name' => '', 'enabled' => 'no', 'url' => '', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue'),
-                "feed_3" => array('name' => '', 'enabled' => 'no', 'url' => '', 'key' => '', 'text_color' => 'white', 'background_color' => 'blue')),
-            "headerLeft" => 'prevYear,prev,next,nextYear today',
-            "headerCenter" => 'title',
-            "headerRight" => 'month agendaWeek agendaDay',
-            "hiddenDays" => '',
-            "dayNamesShort" => '',
-            "fixedWeekCount" => true,
-            "weekNumbers" => false,
-            "weekNumberCalculation" => 'local',
-            "weekNumberTitle" => 'W',
-            "timeZone" => "local",
-            "qtip" => array('style' => "qtip-bootstrap", 'rounded' => 'qtip-rounded', 'shadow' => 'qtip-shadow'),
-            "hideTitle" => false,
-            "defaultDate" => ''
-        );
         self::extendA($arr, $options);
-        self::fixBool($options);
+        array_walk_recursive($options, array(__CLASS__, 'fixBool'));
+        $options['version'] = IBS_CALENDAR_VERSION;
         self::$options = $options;
         update_option('ibs_calendar_options', $options);
     }
@@ -146,11 +143,12 @@ class IBS_CALENDAR {
         add_settings_field('align', 'calendar align', array(__CLASS__, 'field_align'), 'calendar-general', 'calendar-section-general');
         add_settings_field('width', 'calendar width', array(__CLASS__, 'field_width'), 'calendar-general', 'calendar-section-general');
         add_settings_field('ibsEvents', 'Show IBS Events', array(__CLASS__, 'field_ibsEvents'), 'calendar-general', 'calendar-section-general');
-        add_settings_field('event_list', 'event list', array(__CLASS__, 'field_event_list'), 'calendar-general', 'calendar-section-general');
 
-        add_settings_field('list_max', 'List max events', array(__CLASS__, 'field_list_max'), 'calendar-general', 'calendar-section-general');
-        add_settings_field('list_past', 'List past events', array(__CLASS__, 'field_list_past'), 'calendar-general', 'calendar-section-general');
-        add_settings_field('list_repeat', 'List repeat events', array(__CLASS__, 'field_list_repeat'), 'calendar-general', 'calendar-section-general');
+        add_settings_section('calendar-list-section-general', '', array(__CLASS__, 'admin_general_list_header'), 'calendar-list-general');
+        add_settings_field('event_list', 'event list', array(__CLASS__, 'field_event_list'), 'calendar-list-general', 'calendar-list-section-general');
+        add_settings_field('list_max', 'List max events', array(__CLASS__, 'field_list_max'), 'calendar-list-general', 'calendar-list-section-general');
+        add_settings_field('list_past', 'List past events', array(__CLASS__, 'field_list_past'), 'calendar-list-general', 'calendar-list-section-general');
+        add_settings_field('list_repeat', 'List repeat events', array(__CLASS__, 'field_list_repeat'), 'calendar-list-general', 'calendar-list-section-general');
 
         add_settings_section('section_fullcalendar', '', array(__CLASS__, 'admin_options_header'), 'fullcalendar');
         add_settings_field('aspectRatio', 'aspectRatio', array(__CLASS__, 'field_aspectRatio'), 'fullcalendar', 'section_fullcalendar');
@@ -179,19 +177,25 @@ class IBS_CALENDAR {
         add_settings_field('feeds', 'event feeds', array(__CLASS__, 'field_feeds'), 'feeds', 'section_feeds');
 
         add_settings_section('section_qtip', '', array(__CLASS__, 'admin_qtip_header'), 'qtip');
-        add_settings_field('classes', '', array(__CLASS__, 'field_qtip_classes'), 'qtip', 'section_qtip');
+        add_settings_field('rounded', 'Rounded', array(__CLASS__, 'field_qtip_rounded'), 'qtip', 'section_qtip');
+        add_settings_field('shadow', 'Shadow', array(__CLASS__, 'field_qtip_shadow'), 'qtip', 'section_qtip');
+        add_settings_field('style', 'Style', array(__CLASS__, 'field_qtip_style'), 'qtip', 'section_qtip');
     }
 
     static function admin_general_header() {
         echo '<div class="ibs-admin-bar">General settings</div>';
     }
 
+    static function admin_general_list_header() {
+        echo '<div class="ibs-admin-bar">Event list default settings</div>';
+    }
+
     static function admin_options_header() {
-        echo '<div class="ibs-admin-bar" >FullCalendar options   (<a href="http://fullcalendar.io/docs/" target="_blank" >please see the Full Calendar documentation for these options.)</a> </div>';
+        echo '<div class="ibs-admin-bar" >FullCalendar default settings   (<a href="http://fullcalendar.io/docs/" target="_blank" >please see the Full Calendar documentation for these options.)</a> </div>';
     }
 
     static function admin_qtip_header() {
-        echo '<div class="ibs-admin-bar" >Tooltip options</div>';
+        echo '<div class="ibs-admin-bar" >Event list Qtip settings</div>';
     }
 
     static function admin_feeds_header() {
@@ -205,37 +209,25 @@ class IBS_CALENDAR {
 
     static function field_debug() {
         $checked = self::$options['debug'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[debug]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = self::$options['debug'] ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[debug]" value="false"' . $checked . '/>&nbspNo';
-        
-        
+        echo '<input type="checkbox" name="ibs_calendar_options[debug]" value="true"' . $checked . '/>';
+
         $version = self::$options['version'];
         echo "<input type='hidden' name='ibs_calendar_options[version]' value='$version'/>";
-        $defaultDate = self::$options['defaultDate'];
-        echo "<input type='hidden' name='ibs_calendar_options[defaultDate]' value='$defaultDate'/>";
-        echo "<input type='hidden' name='ibs_calendar_options[hideTitle]' value='no'/>";
     }
 
     static function field_ibsEvents() {
         $checked = self::$options['ibsEvents'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[ibsEvents]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = self::$options['ibsEvents'] ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[ibsEvents]" value="false"' . $checked . '/>&nbspNo';
+        echo '<input type="checkbox" name="ibs_calendar_options[ibsEvents]" value="true"' . $checked . '/>';
     }
 
     static function field_fixedWeekCount() {
         $checked = self::$options['fixedWeekCount'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[fixedWeekCount]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = $checked === 'checked' ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[fixedWeekCount]" value="false"' . $checked . '/>&nbspNo  [fixed number of weeks shown.]';
+        echo '<input type="checkbox" name="ibs_calendar_options[fixedWeekCount]" value="true"' . $checked . '/> [fixed number of weeks shown.]';
     }
 
     static function field_weekNumbers() {
         $checked = self::$options['weekNumbers'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[weekNumbers]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = $checked === 'checked' ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[weekNumbers]" value="false"' . $checked . '/>&nbspNo ';
+        echo '<input type="checkbox" name="ibs_calendar_options[weekNumbers]" value="true"' . $checked . '/>';
     }
 
     static function field_ui_theme() {
@@ -278,16 +270,12 @@ class IBS_CALENDAR {
 
     static function field_list_past() {
         $checked = self::$options['list_past'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[list_past]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = self::$options['list_past'] ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[list_past]" value="false"' . $checked . '/>&nbspNo';
+        echo '<input type="checkbox" name="ibs_calendar_options[list_past]" value="true"' . $checked . '/>';
     }
 
     static function field_list_repeat() {
         $checked = self::$options['list_repeat'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[list_repeat]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = self::$options['list_repeat'] ? '' : "checked";
-        echo '<input type="radio" name="ibs_calendar_options[list_repeat]" value="false"' . $checked . '/>&nbspNo';
+        echo '<input type="checkbox" name="ibs_calendar_options[list_repeat]" value="true"' . $checked . '/>';
     }
 
     static function field_list_max() {
@@ -308,23 +296,17 @@ class IBS_CALENDAR {
 
     static function field_weekends() {
         $checked = self::$options['weekends'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[weekends]" value="true" ' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = $checked === 'checked' ? '' : 'checked';
-        echo '<input type="radio" name="ibs_calendar_options[weekends]" value="false" ' . $checked . '/>&nbspNo ';
+        echo '<input type="checkbox" name="ibs_calendar_options[weekends]" value="true" ' . $checked . '/>';
     }
 
     static function field_theme() {
         $checked = self::$options['theme'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[theme]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = $checked === 'checked' ? '' : 'checked';
-        echo '<input type="radio" name="ibs_calendar_options[theme]" value="false"' . $checked . '/>&nbspNo ';
+        echo '<input type="checkbox" name="ibs_calendar_options[theme]" value="true"' . $checked . '/>';
     }
 
     static function field_editable() {
         $checked = self::$options['editable'] ? "checked" : '';
-        echo '<input type="radio" name="ibs_calendar_options[editable]" value="true"' . $checked . '/>&nbspYes&nbsp&nbsp';
-        $checked = $checked === 'checked' ? '' : 'checked';
-        echo '<input type="radio" name="ibs_calendar_options[editable]" value="false"' . $checked . '/>&nbspNo ';
+        echo '<input type="checkbox" name="ibs_calendar_options[editable]" value="true"' . $checked . '/>';
     }
 
     static function field_eventLimit() {
@@ -480,44 +462,48 @@ class IBS_CALENDAR {
         echo '<input name="ibs_calendar_options[aspectRatio]" min="0.1" max="5.0" step="0.1" type="number" value="' . $value . '" />';
     }
 
-//======================================================================================================================================
-    static function field_qtip_classes() {
-        $html = "<div></div>"
-                . "<table class='qtip-table'><tbody>"
-                . "<tr><td style='font-weight:bold;'>CSS3 classes </td><td></td></tr>"
-                . "<tr><td> <input id='qtip-rounded' type='checkbox' value='qtip-rounded' name='ibs_calendar_options[qtip][rounded]'/><i>qtip-rounded</i></td><td>CSS3 border-radius class for applying rounded corners to your tooltips </td></tr>"
-                . "<tr><td> <input id='qtip-shadow' type='checkbox' value='qtip-shadow' name='ibs_calendar_options[qtip][shadow]'/><i>qtip-shadow</i></td><td>CSS3 box-shadow class for applying shadows to your tooltips </td></tr>"
-                . "<tr><td style='font-weight:bold;'>Styles </td><td></td></tr>"
-                . "<tr><td> <input id='qtip-none' type='radio' value='' name='ibs_calendar_options[qtip][style]' checked /><i>none</i></td><td></td></tr>"
-                . "<tr><td> <input id='qtip-light' type='radio' value='qtip-light' name='ibs_calendar_options[qtip][style]'/><i>qtip-light</i></td><td> light coloured style</td></tr>"
-                . "<tr><td> <input id='qtip-dark'  type='radio' value='qtip-dark' name='ibs_calendar_options[qtip][style]'/><i>qtip-dark</i></td><td>dark style</td></tr>"
-                . "<tr><td> <input id='qtip-cream' type='radio' value='qtip-cream' name='ibs_calendar_options[qtip][style]'/><i>qtip-cream</i></td><td>cream</td></tr>"
-                . "<tr><td> <input id='qtip-red' type='radio' value='qtip-red' name='ibs_calendar_options[qtip][style]'/><i>qtip-red</i></td><td>Alert-ful red style </td></tr>"
-                . "<tr><td> <input id='qtip-greent' type='radio' value='qtip-green' name='ibs_calendar_options[qtip][style]'/><i>qtip-green</i></td><td>Positive green style </td></tr>"
-                . "<tr><td> <input id='qtip-blue' type='radio' value='qtip-blue' name='ibs_calendar_options[qtip][style]'/><i>qtip-blue</i></td><td>Informative blue style </td></tr>"
-                . "<tr><td> <input id='qtip-bootstrap' type='radio' value='qtip-bootstrap' name='ibs_calendar_options[qtip][style]'/><i>qtip-bootstrap</i></td><td>Twitter Bootstrap style </td></tr>"
-                . "<tr><td> <input id='qtip-youtube' type='radio' value='qtip-youtube' name='ibs_calendar_options[qtip][style]'/><i>qtip-youtube</i></td><td>Google's new YouTube style</td></tr>"
-                . "<tr><td> <input id='qtip-tipsy' type='radio' value='qtip-tipsy' name='ibs_calendar_options[qtip][style]'/><i>qtip-tipsy</i></td><td>Minimalist Tipsy style </td></tr>"
-                . "<tr><td> <input id='qtip-tipped' type='radio' value='qtip-tipped' name='ibs_calendar_options[qtip][style]'/><i>qtip-tipped</i></td><td>Tipped libraries</td></tr>"
-                . "<tr><td> <input id='qtip-jtools' type='radio' value='qtip-jtools' name='ibs_calendar_options[qtip][style]'/><i>qtip-jtools</i></td><td>jTools tooltip style </td></tr>"
-                . "<tr><td> <input id='qtip-cluetip' type='radio' value='qtip-cluetip' name='ibs_calendar_options[qtip][style]'/><i>qtip-cluetip</i></td><td>Good ole' ClueTip style </td></tr>"
-                . "</tbody></table><br/>";
-        if (isset(self::$options['qtip']['style'])) {
-            $value = str_replace('_', '-', self::$options['qtip']['style']);
-            $html = str_replace("id='$value'", "id='$value' checked ", $html);
-        } else {
-            $html = str_replace("id='none'", "id='none' checked ", $html);
-        }
-        if (isset(self::$options['qtip']['rounded'])) {
-            $value = 'qtip-rounded';
-            $html = str_replace("id='$value'", "id='$value' checked ", $html);
-        }
-        if (isset(self::$options['qtip']['shadow'])) {
-            $value = 'qtip-shadow';
-            $html = str_replace("id='$value'", "id='$value' checked ", $html);
-        }
-        echo $html;
-        echo "<div><input id='test-qtip' type='text' style='width:600px' value='$value'/></div>";
+    //==================================================================================================================================
+
+    static function field_qtip_rounded() {
+        $checked = self::$options['qtip']['shadow'] ? "checked" : '';
+        echo '<input type="checkbox" name="ibs_calendar_options[qtip][shadow]" value="qtip-rounded"' . $checked . '/>';
+    }
+
+    static function field_qtip_shadow() {
+        $checked = self::$options['qtip']['rounded'] ? "checked" : '';
+        echo '<input type="checkbox" name="ibs_calendar_options[qtip][rounded]" value="qtip-shadow"' . $checked . '/>';
+    }
+
+    static function field_qtip_style() {
+        echo "<select name='ibs_calendar_options[qtip][style]'> ";
+        $value = self::$options['qtip']['style'];
+        $selected = $value === '' ? "selected" : '';
+        echo "<option id='qtip-none'     $selected  value=''  selected >none</option>";
+        $selected = $value === 'qtip-light' ? "selected" : '';
+        echo "<option id='qtip-light'    $selected value='qtip-light' >light coloured style</option>";
+        $selected = $value === 'qtip-dark' ? "selected" : '';
+        echo "<option id='qtip-dark'     $selected value='qtip-dark' >dark style</option>";
+        $selected = $value === 'qtip-cream' ? "selected" : '';
+        echo "<option id='qtip-cream'    $selected value='qtip-cream' >cream</option>";
+        $selected = $value === 'qtip-red' ? "selected" : '';
+        echo "<option id='qtip-red'      $selected value='qtip-red' >Alert-ful red style </option>";
+        $selected = $value === 'qtip-green' ? "selected" : '';
+        echo "<option id='qtip-green'   $selected value='qtip-green' >Positive green style </option>";
+        $selected = $value === 'qtip-blue' ? "selected" : '';
+        echo "<option id='qtip-blue'     $selected value='qtip-blue' >Informative blue style </option>";
+        $selected = $value === 'qtip-bootstrap' ? "selected" : '';
+        echo "<option id='qtip-bootstrap'$selected value='qtip-bootstrap' >Twitter Bootstrap style </option>";
+        $selected = $value === 'qtip-youtube' ? "selected" : '';
+        echo "<option id='qtip-youtube'  $selected value='qtip-youtube' >Google's new YouTube style</option>";
+        $selected = $value === 'qtip-tipsy' ? "selected" : '';
+        echo "<option id='qtip-tipsy'    $selected value='qtip-tipsy' >Minimalist Tipsy style </option>";
+        $selected = $value === 'qtip-tipped' ? "selected" : '';
+        echo "<option id='qtip-tipped'   $selected value='qtip-tipped' >Tipped libraries</option>";
+        $selected = $value === 'qtip-jtools' ? "selected" : '';
+        echo "<option id='qtip-jtools'   $selected value='qtip-jtools' >Tools tooltip style </option>";
+        $selected = $value === 'qtip-cluetip' ? "selected" : '';
+        echo "<option id='qtip-cluetip'  $selected value='qtip-cluetip' >Good ole'' ClueTip style </option>";
+        echo "</select>";
     }
 
     static function admin_add_page() {

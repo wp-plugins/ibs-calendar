@@ -17,19 +17,6 @@ function CalendarObj($, args, mode) {
 (function ($) {
     CalendarObj.prototype.init = function (args, mode) {
         var cal = this;
-        for (arg in args) {
-            var data = args[arg];
-            if (typeof data === 'string') {
-                data = data.toLowerCase();
-                if (data === 'yes' || data === 'no') {
-                    args[arg] = data === 'yes' ? true : false;
-                } else {
-                    if (data === 'true' || data === 'false') {
-                        args[arg] = data === 'true' ? true : false;
-                    }
-                }
-            }
-        }
         this.args = args;
         this.mode = mode;
         this.id = args['id'];
@@ -48,12 +35,6 @@ function CalendarObj($, args, mode) {
         }
         this.qtip_params = function (event) {
             var fmt = cal.fullcalendar_options.timeFormat;
-            var bg = '<p style="background-color:'
-                    + event.color
-                    + '; color:'
-                    + event.textColor
-                    + ';" >';
-            bg = '<p style="background-color:silver; color: black;" >';
             var loc = '';
             if (typeof event.location !== 'undefined' && event.location !== '') {
                 loc = '<p>' + 'Location: ' + event.location + '</p>';
@@ -64,7 +45,7 @@ function CalendarObj($, args, mode) {
             }
             var time = moment(event.start).format("ddd MMM DD " + fmt) + moment(event.end).format(' - ' + fmt);
             if (event.allDay) {
-                time = 'All day';
+                time = moment(event.start).format("ddd MMM DD") + '  All day';
             }
             return {
                 content: {'text': '<p>' + event.title + '</p>' + loc + desc + '<p>' + time + '</p>'},
@@ -104,7 +85,7 @@ function CalendarObj($, args, mode) {
             'weekNumbers': false,
             'defaultDate': moment()
         };
-        for (arg in args) {
+        for (var arg in args) {
             if (typeof this.fullcalendar_options[arg] !== 'undefined' && args[arg] !== '') {
                 this.fullcalendar_options[arg] = args[arg];
             }
@@ -153,21 +134,29 @@ function CalendarObj($, args, mode) {
         };
         this.fullcalendar_options.eventAfterAllRender = function (view) {
             if (args.event_list !== 'none' && $('#list-display-' + cal.id).is(':checked')) {
-
-                var event_list = '#event-list-' + cal.id;
                 var event_table = '#event-table-' + cal.id;
                 var fullcalendar = "#fullcalendar-" + cal.id;
                 var events = $(fullcalendar).fullCalendar('clientEvents');
+                if (events.length === 0) {
+                    events.push({
+                        title: 'No events found',
+                        start: moment(),
+                        end: moment(),
+                        location: '',
+                        description: '',
+                        url: ''
+                    });
+                }
                 events.sort(function (a, b) {
                     return moment(a.start) - moment(b.start);
                 });
                 var result = [];
                 if (args.list_past === false || args.list_repeat === false) {
                     for (var i = 0; i < events.length; i++) {
-                        if(typeof events[i].repeat === 'string' && (events[i].repeat !== null && events[i].repeat !== '') && args.list_repeat === false){
+                        if (typeof events[i].repeat === 'string' && (events[i].repeat !== null && events[i].repeat !== '') && args.list_repeat === false) {
                             continue;
                         }
-                        if( args.list_past === false && moment() > moment(events[i].start)){
+                        if (args.list_past === false && moment() > moment(events[i].start)) {
                             continue;
                         }
                         result.push(events[i]);
@@ -196,7 +185,7 @@ function CalendarObj($, args, mode) {
                                         .append($('<td>').text(d).css('padding', '3px'))
                                         .append($('<td>').text(t).css('padding', '3px'))
                                         .append($('<td>')
-                                                .append($('<a>').attr({href: events[i].url}).text(past+events[i].title)))
+                                                .append($('<a>').attr({href: events[i].url, target: '_blank'}).html(past + events[i].title)))
                                         .append($('<td>').text(events[i].location).css('padding', '3px'))
                                         );
                     }
@@ -211,7 +200,7 @@ function CalendarObj($, args, mode) {
                         $(event_table).find('tbody')
                                 .append($('<tr>').qtip(cal.qtip_params(events[i]))
                                         .append($('<td>')
-                                                .append($('<a>').attr({href: events[i].url}).text(past+events[i].title)))
+                                                .append($('<a>').attr({href: events[i].url, target: '_blank'}).html(past + events[i].title)))
                                         );
                     }
 
@@ -227,7 +216,7 @@ function CalendarObj($, args, mode) {
             }
             this.calendar.fullCalendar(this.fullcalendar_options);
             for (var feed in this.options.feeds) {
-                if (this.options.feeds[feed].url !== '' && this.options.feeds[feed].enabled === 'yes') {
+                if (this.options.feeds[feed].url !== '' && this.options.feeds[feed].enabled) {
                     var event_source = {
                         'googleCalendarApiKey': function () {
                             if (typeof cal.options.feeds[feed]['key'] === 'string' && cal.options.feeds[feed]['key'] !== '') {
@@ -345,6 +334,8 @@ function CalendarObj($, args, mode) {
                             data = decodeURIComponent(data);
                             cal.ibs_events = JSON.parse(data);
                             for (var i in cal.ibs_events) {
+                                cal.ibs_events[i].title = jQuery('<div>').html(cal.ibs_events[i].title).text();
+                                cal.ibs_events[i].description = jQuery('<div>').html(cal.ibs_events[i].description).text();
                                 cal.ibs_events[i].editable = false;
                                 cal.ibs_events[i].start = moment.unix(parseInt(cal.ibs_events[i].start)).format();
                                 cal.ibs_events[i].end = moment.unix(parseInt(cal.ibs_events[i].end)).format();

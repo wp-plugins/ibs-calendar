@@ -86,7 +86,6 @@
         <li><a href="#ibs-calendar-tab-settings">Settings</a></li>
         <li><a href="#ibs-calendar-tab-fullcalendar">Options</a></li>
         <li><a href="#ibs-calendar-tab-feeds">Feeds</a></li>
-        <li><a href="#ibs-calendar-tab-qtip">Tooltip</a></li>
         <li><a href="#ibs-calendar-tab-shortcode">Shortcode</a></li>
         <li><a href="#ibs-calendar-tab-calendar">Calendar</a></li>
     </ul>
@@ -96,6 +95,11 @@
         <?php settings_fields('ibs_calendar_options'); ?>
         <div id="ibs-calendar-tab-settings">
             <?php do_settings_sections('calendar-general'); ?>
+            
+            <?php do_settings_sections('calendar-list-general'); ?>
+            
+            <?php do_settings_sections('qtip'); ?>
+            
             <?php submit_button(); ?>
 
         </div>
@@ -109,11 +113,6 @@
             <?php submit_button(); ?>
 
         </div>
-        <div id="ibs-calendar-tab-qtip">
-            <?php do_settings_sections('qtip'); ?>
-            <?php submit_button(); ?>
-        </div>
-
     </form>
     <div id="ibs-calendar-tab-calendar">
         <div id="ibs-admin-div"></div>

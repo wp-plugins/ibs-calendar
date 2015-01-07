@@ -17,15 +17,16 @@ class IBS_WCalendar extends WP_Widget {
         $widget_defaults = array(
             'title' => 'IBS Calendar',
             'list_max' => 50,
-            'list_repeat'=> false,
-            'list_past'=> false,
+            'list_repeat' => "no",
+            'list_past' => "no",
+            'ibs_events' => "no",
             'cal_height' => 300,
             'has_list' => 'none',
             'lst_height' => 300,
         );
 
         $instance = wp_parse_args((array) $instance, $widget_defaults);
-        $args = get_option('ibs_calendar_options')
+        $args = get_option('ibs_calendar_options');
         ?>
         <p>
             <label for="<?php echo $this->get_field_id('title'); ?>"><?php echo'Title'; ?></label>
@@ -40,22 +41,25 @@ class IBS_WCalendar extends WP_Widget {
                 </select>
             </label></div>
         <p></p>
-        
-         <div class="widefat"><label for="<?php echo $this->get_field_id('list_max'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List max events'; ?></span>
+
+        <div class="widefat"><label for="<?php echo $this->get_field_id('list_max'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List max events'; ?></span>
                 <input type="number" min=1 max=100 id="<?php echo $this->get_field_id('list_max'); ?>" name="<?php echo $this->get_field_name('list_max'); ?>"  value="<?php echo esc_attr($instance['list_max']); ?>">
-                </label></div>
+            </label></div>
         <p></p>
-        
+
         <div class="widefat"><label for="<?php echo $this->get_field_id('list_past'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List past events'; ?></span>
                 <input type="checkbox" id="<?php echo $this->get_field_id('list_past'); ?>" name="<?php echo $this->get_field_name('list_past'); ?>"  <?php echo esc_attr($instance['list_past']) === 'yes' ? 'checked' : ''; ?> value="yes">
-                </label></div>
+            </label></div>
         <p></p>
-        
+
         <div class="widefat"><label for="<?php echo $this->get_field_id('list_repeat'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'List repeat events'; ?></span>
                 <input type="checkbox" id="<?php echo $this->get_field_id('list_repeat'); ?>" name="<?php echo $this->get_field_name('list_repeat'); ?>"  <?php echo esc_attr($instance['list_repeat']) === 'yes' ? 'checked' : ''; ?>  value="yes">
-                </label></div>
+            </label></div>
         <p></p>
-        
+        <div class="widefat"><label for="<?php echo $this->get_field_id('ibs_events'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'Show IBS Events'; ?></span>
+                <input type="checkbox" id="<?php echo $this->get_field_id('ibs_events'); ?>" name="<?php echo $this->get_field_name('ibs_events'); ?>"  <?php echo esc_attr($instance['ibs_events']) === 'yes' ? 'checked' : ''; ?>  value="yes">
+            </label></div>
+        <p></p>
         <div class="widefat"><label for="<?php echo $this->get_field_id('cal_height'); ?>"><span  style="display:inline-block; width:100px;"><?php echo 'Calendar height'; ?></span>
                 <input type="number" min=200 max=1000 id="<?php echo $this->get_field_id('cal_height'); ?>" name="<?php echo $this->get_field_name('cal_height'); ?>"  value="<?php echo esc_attr($instance['cal_height']); ?>">
                 &nbsp;px</label></div>
@@ -93,6 +97,23 @@ class IBS_WCalendar extends WP_Widget {
         return $old_instance;
     }
 
+    static function fixBool(&$item, $key) {
+        if ($key === 'eventLimit') {
+            return;
+        }
+        switch (strtolower($item)) {
+            case "null" : $item = null;
+                break;
+            case "true" :
+            case "yes" : $item = true;
+                break;
+            case "false" :
+            case "no" : $item = false;
+                break;
+            default :
+        }
+    }
+
     public function widget($widget_args, $instance) {
         extract($widget_args);
         $title = apply_filters('widget_title', $instance['title']);
@@ -108,15 +129,17 @@ class IBS_WCalendar extends WP_Widget {
             }
         }
         $args = get_option('ibs_calendar_options');
+        array_walk_recursive($args, array(__CLASS__, 'fixBool'));
         for ($i = 1; $args['feedCount'] >= $i; $i++) {
             $index = (string) $i;
             if (false == in_array($index, $feeds)) {
-                $args['feeds']['feed_' . $i]['enabled'] = 'no';
+                $args['feeds']['feed_' . $i]['enabled'] = false;
             }
         }
         $args['list_max'] = (int) $instance['list_max'];
         $args['list_past'] = isset($instance['list_past']);
         $args['list_repeat'] = isset($instance['list_repeat']);
+        $args['ibsEvents'] = isset($instance['ibs_events']);
         $args['width'] = '100%';
         $args['weekends'] = true;
         $args['theme'] = false;
@@ -154,7 +177,7 @@ class IBS_WCalendar extends WP_Widget {
         </div>';
         $html = str_replace('-id', '-' . $id, $html);
         $html = str_replace('width:650px;', 'width :' . $width . ';', $html);
-        $html = str_replace('max-height:200px;','max-height:'.$instance['lst_height']. 'px;', $html);
+        $html = str_replace('max-height:200px;', 'max-height:' . $instance['lst_height'] . 'px;', $html);
         echo $html;
         ?>
         <script type="text/javascript">
