@@ -51,7 +51,6 @@ This yields a solid bar as the event title.
 1. Settings tab.
 2. Options for Full Calendar.
 3. Feeds for Google Calendars
-4. Tooltip styling tab.
 5. Shortcode generator.
 6. Widget
 7. Widget admin
