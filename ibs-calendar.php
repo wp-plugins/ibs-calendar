@@ -4,7 +4,7 @@
   Plugin URI: http://wordpress.org/extend/plugins/
   Description: implements FullCalendar for Wordpress Adimin and shortcode.
   Author: HMoore71
-  Version: 1.1
+  Version: 1.2
   Author URI: http://indianbendsolutions.net
   License: GPL2
   License URI: none
@@ -16,7 +16,7 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-define('IBS_CALENDAR_VERSION', '1.1');
+define('IBS_CALENDAR_VERSION', '1.2');
 register_activation_hook(__FILE__, 'ibs_calendar_defaults');
 
 function ibs_calendar_defaults() {

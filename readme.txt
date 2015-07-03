@@ -5,8 +5,8 @@ Plugin URI: https://indianbendsolutions.net/documentation/ibs-Calendar/
 Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
 Requires at least: 4.0
-Tested up to: 4.2
-Stable tag: 1.1
+Tested up to: 4.2.2
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,5 +64,6 @@ This yields a solid bar as the event title.
 2014-13-28 Version 0.5 fixes IBS Event display problem.
 2015-01-06 Version 1.0 Adds new features and expands existing functionality 
 2015-01-07 Version 1.1 Syncs to base plugin. Modified Admin setup.
+2015-07-03 Version 1.2 Fixes Google API Key
 
 == Upgrade Notice ==
