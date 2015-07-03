@@ -9,7 +9,8 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 function ibs_util_19() {
-    return 'AIzaSyDU0aiNYlY1sRHPuZadvnfAkIRMhEFobP4';
+    //return 'AIzaSyDU0aiNYlY1sRHPuZadvnfAkIRMhEFobP4';
+    return 'AIzaSyBwcmfwl7W1aMyo9wnXwmASRfZ0sOhGhRc';//see http://fullcalendar.io/docs/google_calendar/
 }
 function CalendarObj($, args, mode) {
     this.init(args, mode)
