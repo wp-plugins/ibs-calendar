@@ -65,5 +65,6 @@ This yields a solid bar as the event title.
 2015-01-06 Version 1.0 Adds new features and expands existing functionality 
 2015-01-07 Version 1.1 Syncs to base plugin. Modified Admin setup.
 2015-07-03 Version 1.2 Fixes Google API Key
+2015-07-06 Version 2.0 Update to FullCalendar 2.3.2
 
 == Upgrade Notice ==
