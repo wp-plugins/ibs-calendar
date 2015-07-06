@@ -4,7 +4,7 @@
   Plugin URI: http://wordpress.org/extend/plugins/
   Description: implements FullCalendar for Wordpress Adimin and shortcode.
   Author: HMoore71
-  Version: 1.2
+  Version: 2.0
   Author URI: http://indianbendsolutions.net
   License: GPL2
   License URI: none
@@ -615,11 +615,11 @@ class IBS_CALENDAR {
         wp_register_script('ibs-calendar-script', plugins_url("js/calendar$min.js", __FILE__), self::$core_handles);
         wp_register_script('ibs-moment-script', plugins_url("js/moment$min.js", __FILE__));
 
-        wp_register_style('ibs-fullcalendar-style', plugins_url("js/fullcalendar-2.1.1/fullcalendar.min.css", __FILE__));
-        wp_register_style('ibs-fullcalendar-print-style', plugins_url("js/fullcalendar-2.1.1/fullcalendar.print.min.css", __FILE__));
-        wp_register_script('ibs-fullcalendar-script', plugins_url("js/fullcalendar-2.1.1/fullcalendar$min.js", __FILE__));
-        wp_register_script('ibs-fullcalendar-gcal-script', plugins_url("js/fullcalendar-2.1.1/gcal.js", __FILE__));
-        wp_register_script('ibs-fullcalendar-lang-all-script', plugins_url("js/fullcalendar-2.1.1/lang-all.js", __FILE__));
+        wp_register_style('ibs-fullcalendar-style', plugins_url("js/fullcalendar-2.3.2/fullcalendar.min.css", __FILE__));
+        wp_register_style('ibs-fullcalendar-print-style', plugins_url("js/fullcalendar-2.3.2/fullcalendar.print.min.css", __FILE__));
+        wp_register_script('ibs-fullcalendar-script', plugins_url("js/fullcalendar-2.3.2/fullcalendar$min.js", __FILE__));
+        wp_register_script('ibs-fullcalendar-gcal-script', plugins_url("js/fullcalendar-2.3.2/gcal.js", __FILE__));
+        wp_register_script('ibs-fullcalendar-lang-all-script', plugins_url("js/fullcalendar-2.3.2/lang-all.js", __FILE__));
 
         wp_register_style('ibs-qtip_style', plugins_url("css/jquery.qtip.css", __FILE__));
         wp_register_script('ibs-qtip-script', plugins_url("js/jquery.qtip.min.js", __FILE__));

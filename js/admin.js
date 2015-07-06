@@ -10,6 +10,7 @@ function rgb2hex(color) {
         return color;
     }
 }
+
 jQuery(document).ready(function ($) {
     $('#ibs-event-limit').on('change', '', {}, function (event) {
         var value = $(this).val().toLowerCase();

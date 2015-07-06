@@ -9,8 +9,11 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 function ibs_util_19() {
-    //return 'AIzaSyDU0aiNYlY1sRHPuZadvnfAkIRMhEFobP4';
-    return 'AIzaSyBwcmfwl7W1aMyo9wnXwmASRfZ0sOhGhRc';//see http://fullcalendar.io/docs/google_calendar/
+    return 'AIzaSyBwcmfwl7W1aMyo9wnXwmASRfZ0sOhGhRc'; //see http://fullcalendar.io/docs/google_calendar/
+}
+function IsEmail(email) {
+    var regex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    return regex.test(email);
 }
 function CalendarObj($, args, mode) {
     this.init(args, mode)
@@ -218,7 +221,8 @@ function CalendarObj($, args, mode) {
                         },
                         'textColor': this.options.feeds[feed]['textColor'],
                         'backgroundColor': this.options.feeds[feed]['backgroundColor'],
-                        'url': this.options.feeds[feed]['url']
+                        'url': this.options.feeds[feed]['url'],
+                        'googleCalendarId': IsEmail(this.options.feeds[feed]['url']) ? this.options.feeds[feed]['url'] : null
                     };
                     this.calendar.fullCalendar('addEventSource', event_source);
                 }
