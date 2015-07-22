@@ -218,6 +218,18 @@ jQuery(document).ready(function ($) {
                     + '</ul>'
                     + '</div>'
 
+                    + '<div id="dropdown-feed-click" class="dropdown dropdown-tip">'
+                    + '<ul class="dropdown-menu">'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><label><input class="feed-click-item" value="same" name="feedclick" type="radio" /> Same window</label></li>'
+                    + '<li><label><input class="feed-click-item" value="new" name="feedclick" type="radio" /> New window</li>'
+                    + '<li><label><input class="feed-click-item" value="url" name="feedclick" type="radio" /> <input id="feed-click-url" min="1" max="100" value="" type="text" /> URL<label></li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '<li><a class="dropdown-update"  rel="#dropdown-feed-click" href="#"> Update</label></li>'
+                    + '<li class="dropdown-divider"></li>'
+                    + '</ul>'
+                    + '</div>'
+
                     + '</div>');
 
     $('#dropdown-header-left').find('ul').sortable();
@@ -272,7 +284,7 @@ jQuery(document).ready(function ($) {
 
         }
     });
-
+    
     //header left
 
     $('#dropdown-header-left').on('hide', '', {}, function (event) {

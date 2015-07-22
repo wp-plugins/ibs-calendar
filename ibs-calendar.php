@@ -4,7 +4,7 @@
   Plugin URI: http://wordpress.org/extend/plugins/
   Description: implements FullCalendar for Wordpress Adimin and shortcode.
   Author: HMoore71
-  Version: 2.0
+  Version: 2.1
   Author URI: http://indianbendsolutions.net
   License: GPL2
   License URI: none
@@ -449,7 +449,7 @@ class IBS_CALENDAR {
         $value = self::$options['eventLimitClick'];
         echo '<select name="ibs_calendar_options[eventLimitClick]" value="' . $value . '" />';
         $selected = self::$options['eventLimitClick'] == "popover" ? 'selected' : '';
-        echo '<option value="none" ' . $selected . '>popover</option>';
+        echo '<option value="popover" ' . $selected . '>popover</option>';
         $selected = self::$options['eventLimitClick'] == "week" ? 'selected' : '';
         echo '<option value="week" ' . $selected . '>week</option>';
         $selected = self::$options['eventLimitClick'] == "day" ? 'selected' : '';
@@ -526,6 +526,23 @@ class IBS_CALENDAR {
                 $args['dayNamesShort'] = null;
             } else {
                 $args['dayNamesShort'] = explode(',', $args['dayNamesShort']);
+            }
+        }
+        if (isset($args['firstDay'])) {
+            $args['firstDay'] = intval($args['firstDay']);
+        }
+        if (isset($args['eventLimit'])) {
+            if (is_string($args['eventLimit'])) {
+                switch ($args['eventLimit']) {
+                    case 'yes' :
+                        $args['eventLimit'] = true;
+                        break;
+                    case 'no' :
+                        $args['eventLimit'] = false;
+                        break;
+                    default:
+                        $args['eventLimit'] = intval($args['eventLimit']);
+                }
             }
         }
     }

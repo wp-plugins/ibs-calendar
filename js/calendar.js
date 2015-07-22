@@ -24,7 +24,7 @@ function CalendarObj($, args, mode) {
         this.args = args;
         this.mode = mode;
         this.id = args['id'];
-        this.ibs_events;
+        //this.ibs_events;
         this.calendar = $('#fullcalendar-' + this.id);
         this.options = {
             'id': '1',
@@ -65,7 +65,10 @@ function CalendarObj($, args, mode) {
                     event: 'mouseover'
                 },
                 hide: {
+                    fixed: true,
+                    delay: 250,
                     event: 'mouseout mouseleave'
+                 
                 }
             };
         }
@@ -118,8 +121,14 @@ function CalendarObj($, args, mode) {
                 element.qtip(cal.qtip_params(event));
             }
         };
+        this.fullcalendar_options.eventClick = function (calEvent, jsEvent, view) {
+            if (calEvent.url) {
+                window.open(calEvent.url);
+                return false;
+            }
+        }
         this.fullcalendar_options.dayClick = function (date_moment, jsEvent, view) {
-            if (mode !== 'widget') {
+            if (mode !== 'widget' && 1 == 2) { //disable in version 2.1
                 switch (view.name) {
                     case 'month' :
                         $(cal.calendar).fullCalendar('changeView', 'agendaWeek');

@@ -46,6 +46,7 @@
                         $('#ibs-header-center-help').dropdown('attach', '#dropdown-header-center');
                         $('#ibs-hiddendays-help').dropdown('attach', '#dropdown-hiddendays');
                         $('#ibs-height-help').dropdown('attach', '#dropdown-height');
+
                         break;
                     case 'Shortcode':
                         $('#dropdown-event-limit').removeClass('ibs-options').addClass('ibs-shortcode');
@@ -95,11 +96,11 @@
         <?php settings_fields('ibs_calendar_options'); ?>
         <div id="ibs-calendar-tab-settings">
             <?php do_settings_sections('calendar-general'); ?>
-            
+
             <?php do_settings_sections('calendar-list-general'); ?>
-            
+
             <?php do_settings_sections('qtip'); ?>
-            
+
             <?php submit_button(); ?>
 
         </div>

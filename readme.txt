@@ -6,7 +6,7 @@ Author URI: https://indianbendsolutions.net/
 Tags: google calendar, calendar, 
 Requires at least: 4.0
 Tested up to: 4.2.2
-Stable tag: 2.0
+Stable tag: 2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,13 +58,18 @@ This yields a solid bar as the event title.
 == Changelog ==
 
 (initial release)
-2014-11-27 Added required Google Calendar API Key
-2014-12-02 Version 0.3 adds a IBS calendar widget using Full Calendar.
-2014-12-27 Version 0.4 adds several more Full Calendar options and support for IBS Events calendar feed.
-2014-13-28 Version 0.5 fixes IBS Event display problem.
-2015-01-06 Version 1.0 Adds new features and expands existing functionality 
-2015-01-07 Version 1.1 Syncs to base plugin. Modified Admin setup.
-2015-07-03 Version 1.2 Fixes Google API Key
-2015-07-06 Version 2.0 Update to FullCalendar 2.3.2
+1. 2014-11-27 Added required Google Calendar API Key
+2. 2014-12-02 Version 0.3 adds a IBS calendar widget using Full Calendar.
+3. 2014-12-27 Version 0.4 adds several more Full Calendar options and support for IBS Events calendar feed.
+4. 2014-13-28 Version 0.5 fixes IBS Event display problem.
+5. 2015-01-06 Version 1.0 Adds new features and expands existing functionality 
+6. 2015-01-07 Version 1.1 Syncs to base plugin. Modified Admin setup.
+7. 2015-07-03 Version 1.2 Fixes Google API Key
+8. 2015-07-06 Version 2.0 Update to FullCalendar 2.3.2
+9. 2015-07-22 Version 2.1 Open events in new window.
+9. 2015-07-22 Version 2.1 Disable dayClick changing calendar view,
+9. 2015-07-22 Version 2.1 Fix: eventLimit not working.
+9. 2015-07-22 Version 2.1 Fix: firstDay not working.
+9. 2015-07-22 Version 2.1 Allow tooltips to be clicked.
 
 == Upgrade Notice ==
